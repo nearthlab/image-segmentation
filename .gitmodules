@@ -1,0 +1,6 @@
+[submodule "submodules/classification_models"]
+	path = submodules/classification_models
+	url = https://github.com/qubvel/classification_models
+[submodule "submodules/segmentation_models"]
+	path = submodules/segmentation_models
+	url = https://github.com/qubvel/segmentation_models

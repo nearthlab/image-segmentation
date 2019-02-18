@@ -1,0 +1,7 @@
+**/__pycache__/*
+**/*.h5
+datasets/*/
+playground.py
+plans/*/
+assets/*/
+assets/*.tar.gz
