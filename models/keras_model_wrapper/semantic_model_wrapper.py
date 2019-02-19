@@ -8,9 +8,10 @@ from keras.losses import categorical_crossentropy
 
 from models.keras_model_wrapper import KerasModelWrapper
 
-from data_generators.utils import resize, mold_image
+from data_generators.utils import resize
 
-from segmentation_models.backbones import get_backbone, get_feature_layers
+from classification_models import Classifiers
+from .keras_model_wrapper import get_feature_layers
 from segmentation_models.losses import jaccard_loss as jaccard_loss_graph
 from segmentation_models.losses import dice_loss as dice_loss_graph
 
@@ -32,8 +33,8 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
     def get_backbone_and_feature_layers(self, num_feature_layers):
         super(SemanticModelWrapper, self).build()
         image_shape = (self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, 3)
-        backbone = get_backbone(self.config.BACKBONE,
-                                input_shape=image_shape,
+        classifier, self.preprocess_input = Classifiers.get(self.config.BACKBONE)
+        backbone = classifier(input_shape=image_shape,
                                 input_tensor=None,
                                 weights=self.config.BACKBONE_WEIGHTS,
                                 include_top=False)
@@ -87,7 +88,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
         height, width = image.shape[:2]
         if image.shape != (self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, 3):
             image = resize(image, output_shape=(self.config.IMAGE_SIZE, self.config.IMAGE_SIZE), preserve_range=True)
-        input = mold_image(image, self.config.BACKBONE)
+        input = self.preprocess_input(image)
         input = np.expand_dims(input, axis=0).astype(np.float32)
         res = self.model.predict(input, batch_size=1)[0]
 

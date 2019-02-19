@@ -243,6 +243,7 @@ def draw_segmentation(image, masks, class_names=None,
     plt.close()
     return result
 
+
 def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, title="", ax=None,
                       figsize=(16, 16), show_mask=True, show_bbox=True):

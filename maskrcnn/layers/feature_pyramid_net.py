@@ -19,7 +19,7 @@ from keras.layers import MaxPooling2D
     P3 = Conv1x1(C3): (B, N / 32, N / 32, pyramid_size)
     P4 = MaxPool(P3): (B, N / 64, N / 64, pyramid_size)        
 '''
-# TODO: replace this with segmentation_models' FPN
+# TODO: replace this with qubvel/segmentation_models' FPN if possible
 def fpn_graph(input_tensors, pyramid_size = 256, interpolation = 'nearest'):
     num_inputs = len(input_tensors)
     output_tensors = [None] * num_inputs

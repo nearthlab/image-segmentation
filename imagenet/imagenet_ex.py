@@ -1,10 +1,9 @@
-import os
 import time
 import argparse
 import numpy as np
 
 from keras.applications.imagenet_utils import decode_predictions
-from segmentation_models.backbones import get_preprocessing, get_backbone
+from classification_models import Classifiers
 
 from data_generators.utils import resize, load_image_rgb
 
@@ -17,16 +16,16 @@ parser.add_argument('-b', '--backbone', required=True,
 args = parser.parse_args()
 
 backbone = args.backbone
-preprocess_input = get_preprocessing(backbone)
+classifier, preprocess_input = Classifiers.get(backbone)
 
 # load model
-model = get_backbone(backbone, input_shape=(224, 224, 3), include_top=True, weights='imagenet')
+model = classifier(input_shape=(224, 224, 3), include_top=True, weights='imagenet')
 
 image_files = ['cat1.jpg', 'cat2.jpg', 'dog1.jpg', 'dog2.jpg']
 print('=============results=============')
 for image_file in image_files:
     # read and prepare image
-    img = load_image_rgb(os.path.join('imagenet', image_file))
+    img = load_image_rgb(image_file)
     x = resize(img, (224, 224), preserve_range=True)
     x = preprocess_input(x)
     x = np.expand_dims(x, 0)

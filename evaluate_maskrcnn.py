@@ -66,7 +66,7 @@ def evaluate_coco(model, dataset, coco, eval_type="bbox", limit=0, image_ids=Non
 
         # Run detection
         t = time.time()
-        r = model.predict([image])
+        r = model.predict(image)
         t_prediction += (time.time() - t)
 
         # Convert results to COCO format

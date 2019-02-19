@@ -1,6 +1,7 @@
 import logging
 import numpy as np
-from data_generators.utils import resize_image, resize_mask, mold_image
+from data_generators.utils import resize_image, resize_mask
+from classification_models import Classifiers
 
 
 def load_image_gt(dataset, image_id, image_size):
@@ -67,6 +68,8 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
     image_ids = np.copy(dataset.image_ids)
     error_count = 0
 
+    preprocess_input = Classifiers.get_preprocessing(config.BACKBONE)
+
     # Keras requires a generator to run indefinitely.
     while True:
         try:
@@ -88,7 +91,7 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
                      config.NUM_CLASSES - 1), dtype=gt_mask.dtype)
 
             # Add to batch
-            batch_images[b] = mold_image(image.astype(np.float32), config.BACKBONE)
+            batch_images[b] = preprocess_input(image.astype(np.float32))
             batch_gt_mask[b, :, :, :] = gt_mask
 
             b += 1

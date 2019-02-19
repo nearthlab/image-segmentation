@@ -1,5 +1,4 @@
 import warnings
-import keras
 import numpy as np
 import scipy
 import skimage
@@ -8,7 +7,7 @@ from skimage.color import gray2rgb
 from skimage.transform import resize as skresize
 from distutils.version import LooseVersion
 
-from segmentation_models.backbones import get_preprocessing
+from classification_models import Classifiers
 
 def load_image_rgb(fname):
     image = imread(fname)
@@ -85,20 +84,14 @@ def resize_image(image, size):
     return image.astype(image_dtype), window, scale, padding, crop
 
 
+# This is for preventing loss explosion when training maskrcnn with a VGG backbone model
+# Use this function for maskrcnn only. For other models, just use Classifiers.get_preprocessing
 def mold_image(images, backbone_name):
     if 'vgg' in backbone_name:
-        # This is for preventing loss explosion when training maskrcnn with a VGG backbone model
         return images.astype(np.float32) / 127.0 - 1.0
     else:
-        preprocess_input = get_preprocessing(backbone_name)
-        if 'mobilenet' in backbone_name:
-            # This is for preventing the error with the following message when using Keras mobilenet's preprocessing:
-            #   "...../python3.5/site-packages/keras_applications/imagenet_utils.py", line 186, in preprocess_input
-            #   data_format = backend.image_data_format()
-            #   AttributeError: 'NoneType' object has no attribute 'image_data_format'
-            # This looks like a problem of keras (https://github.com/keras-team/keras-applications/issues/54)
-            return preprocess_input(images, backend=keras.backend)
-        else: return preprocess_input(images)
+        preprocess_input = Classifiers.get_preprocessing(backbone_name)
+        return preprocess_input(images)
 
 
 def resize_mask(mask, scale, padding, crop=None):

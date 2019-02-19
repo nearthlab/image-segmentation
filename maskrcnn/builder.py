@@ -9,7 +9,9 @@ from keras.layers import Concatenate
 
 from keras.backend import shape
 
-from segmentation_models.backbones import get_backbone, DEFAULT_FEATURE_LAYERS
+#from segmentation_models.backbones import get_backbone, DEFAULT_FEATURE_LAYERS
+from classification_models import Classifiers
+from models.keras_model_wrapper import get_feature_layers
 from segmentation_models.utils import get_layer_number
 
 from .utils import norm_boxes_graph, get_anchors
@@ -26,7 +28,7 @@ def get_default_feature_layers(config, backbone):
     try:
         feature_layers = []
         # We want our feature layers to be listed in decreasing output size (width, height)
-        for l in reversed(DEFAULT_FEATURE_LAYERS[config.BACKBONE][:-1]):
+        for l in reversed(get_feature_layers(config.BACKBONE)[:-1]):
             feature_layers.append(l)
         # and we use the last backbone layer output instead of the last layer in DEFAULT_FEATURE_LAYERS
         feature_layers.append(backbone.layers[-1].name)
@@ -35,6 +37,7 @@ def get_default_feature_layers(config, backbone):
         print('No default feature layers for {} provided yet.',
               'Please specify the layer names (or indexes) explicitly in config file'.format(config.BACKBONE))
         exit(1)
+
 
 def build_maskrcnn(config):
     # Image size must be dividable by 2 multiple times
@@ -50,12 +53,11 @@ def build_maskrcnn(config):
     input_image_meta = Input(shape=[config.IMAGE_META_SIZE],
                              name='input_image_meta')
 
-    # Build the shared convolutional layers.
-    # Bottom-up Layers
-    # Returns a list of the last layers of each stage
-    backbone = get_backbone(name=config.BACKBONE, input_tensor=input_image,
-                            input_shape=image_shape,
-                            include_top=False, weights=config.BACKBONE_WEIGHTS)
+    classifier = Classifiers.get_classifier(config.BACKBONE)
+    backbone = classifier(input_tensor=input_image,
+                          input_shape=image_shape,
+                          include_top=False,
+                          weights=config.BACKBONE_WEIGHTS)
 
     backbone_layer_names = []
     for layer in backbone.layers:
