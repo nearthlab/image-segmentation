@@ -98,7 +98,7 @@ def find_mask_center(mask):
         return None, None
 
 
-def draw_instances(image, boxes, masks, class_ids, class_names, scores = None,
+def draw_instances(image, boxes, masks, class_ids, class_names=None, scores = None,
                       title="", figsize=(16, 16), show_mask=True, show_bbox=True):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
@@ -149,12 +149,13 @@ def draw_instances(image, boxes, masks, class_ids, class_names, scores = None,
             ax.add_patch(p)
 
         # Label
-        class_id = class_ids[i]
-        score = scores[i] if scores is not None else None
-        label = class_names[class_id]
-        caption = "{} {:.3f}".format(label, score) if score else label
-        ax.text(x1, y1 + 8, caption,
-                color='w', size=11, backgroundcolor="none")
+        if class_names:
+            class_id = class_ids[i]
+            score = scores[i] if scores is not None else None
+            label = class_names[class_id]
+            caption = "{} {:.3f}".format(label, score) if score else label
+            ax.text(x1, y1 + 8, caption,
+                    color='w', size=11, backgroundcolor="none")
 
         # Mask
         mask = masks[:, :, i]
@@ -244,7 +245,7 @@ def draw_segmentation(image, masks, class_names=None,
     return result
 
 
-def display_instances(image, boxes, masks, class_ids, class_names,
+def display_instances(image, boxes, masks, class_ids, class_names=None,
                       scores=None, title="", ax=None,
                       figsize=(16, 16), show_mask=True, show_bbox=True):
     """
