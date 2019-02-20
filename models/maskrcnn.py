@@ -1,9 +1,8 @@
 import numpy as np
 
-from models.keras_model_wrapper import KerasModelWrapper
-from maskrcnn import build_maskrcnn
-
-from maskrcnn.utils import norm_boxes, denorm_boxes, get_anchors
+from keras_model_wrapper import KerasModelWrapper
+from mask_rcnn import build_maskrcnn
+from mask_rcnn.utils import norm_boxes, denorm_boxes, get_anchors
 from data_generators.utils import mold_image, unmold_mask, compose_image_meta, resize
 
 

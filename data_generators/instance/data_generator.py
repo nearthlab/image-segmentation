@@ -3,7 +3,7 @@ import numpy as np
 
 from data_generators.utils import resize, resize_image, resize_mask,\
     minimize_mask, compose_image_meta, mold_image
-from maskrcnn.utils import extract_bboxes, compute_iou, box_refinement,\
+from mask_rcnn.utils import extract_bboxes, compute_iou, box_refinement,\
     compute_overlaps, get_anchors
 
 

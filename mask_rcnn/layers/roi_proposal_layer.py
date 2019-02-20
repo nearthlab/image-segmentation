@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from keras.engine import Layer
 
-from maskrcnn.utils import batch_slice, apply_box_deltas_graph, clip_boxes_graph
+from mask_rcnn.utils import batch_slice, apply_box_deltas_graph, clip_boxes_graph
 
 ############################################################
 #  ROI Proposal Layer

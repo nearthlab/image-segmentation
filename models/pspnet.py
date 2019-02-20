@@ -1,4 +1,4 @@
-from models.keras_model_wrapper import SemanticModelWrapper
+from keras_model_wrapper import SemanticModelWrapper
 from segmentation_models.pspnet.builder import build_psp
 
 ############################################################

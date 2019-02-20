@@ -4,20 +4,20 @@ import numpy as np
 import keras.backend as K
 from keras.models import Model
 from keras.layers import Lambda, Input
-from keras.losses import categorical_crossentropy
+from keras.losses import binary_crossentropy
 
-from models.keras_model_wrapper import KerasModelWrapper
+from keras_model_wrapper import KerasModelWrapper
 
 from data_generators.utils import resize
 
 from classification_models import Classifiers
-from .keras_model_wrapper import get_feature_layers
+from .feature_layers import get_feature_layers
 from segmentation_models.losses import jaccard_loss as jaccard_loss_graph
 from segmentation_models.losses import dice_loss as dice_loss_graph
 
 
-def cce_loss_graph(gt, pr):
-    return K.mean(categorical_crossentropy(gt, pr))
+def weighted_bce_loss_graph(gt, pr, w):
+    return K.mean(w * K.clip(binary_crossentropy(gt, pr), K.epsilon(), 1.0))
 
 ############################################################
 #  Semantic Segmentation Model Class
@@ -56,8 +56,12 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
                 shape=[self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, None],
                 name='input_gt_masks', dtype=float)
 
-            cce_loss = Lambda(lambda x: cce_loss_graph(*x), name='cce_loss') \
-                ([input_gt_masks, base_model.output])
+            input_weight_mask = Input(
+                shape=[self.config.IMAGE_SIZE, self.config.IMAGE_SIZE],
+                name='input_weight_mask', dtype=float)
+
+            wbce_loss = Lambda(lambda x: weighted_bce_loss_graph(*x), name='wbce_loss') \
+                ([input_gt_masks, base_model.output, input_weight_mask])
 
             jaccard_loss = Lambda(lambda x: jaccard_loss_graph(*x), name='jaccard_loss') \
                 ([input_gt_masks, base_model.output])
@@ -66,9 +70,9 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
                 ([input_gt_masks, base_model.output])
 
             inputs = base_model.inputs
-            inputs.append(input_gt_masks)
+            inputs += [input_gt_masks, input_weight_mask]
             outputs = base_model.outputs
-            outputs += [cce_loss, jaccard_loss, dice_loss]
+            outputs += [wbce_loss, jaccard_loss, dice_loss]
             model = Model(inputs, outputs, name=name)
 
             return model

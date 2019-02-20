@@ -1,4 +1,4 @@
-from models.keras_model_wrapper import SemanticModelWrapper
+from keras_model_wrapper import SemanticModelWrapper
 from segmentation_models.unet.builder import build_unet
 
 ############################################################

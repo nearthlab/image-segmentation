@@ -1,7 +1,7 @@
 import tensorflow as tf
 from keras.engine import Layer
 
-from maskrcnn.utils import box_refinement_graph, batch_slice
+from mask_rcnn.utils import box_refinement_graph, batch_slice
 
 ############################################################
 #  Detection Target Layer

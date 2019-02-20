@@ -9,9 +9,8 @@ from keras.layers import Concatenate
 
 from keras.backend import shape
 
-#from segmentation_models.backbones import get_backbone, DEFAULT_FEATURE_LAYERS
 from classification_models import Classifiers
-from models.keras_model_wrapper import get_feature_layers
+from keras_model_wrapper import get_feature_layers
 from segmentation_models.utils import get_layer_number
 
 from .utils import norm_boxes_graph, get_anchors
@@ -24,7 +23,7 @@ from .losses import rpn_class_loss_graph, rpn_bbox_loss_graph,\
     mrcnn_class_loss_graph, mrcnn_bbox_loss_graph, mrcnn_mask_loss_graph
 
 
-def get_default_feature_layers(config, backbone):
+def get_maskrcnn_feature_layers(config, backbone):
     try:
         feature_layers = []
         # We want our feature layers to be listed in decreasing output size (width, height)
@@ -64,7 +63,7 @@ def build_maskrcnn(config):
         backbone_layer_names.append(layer.name)
 
     if config.FEATURE_LAYERS == 'default':
-        feature_layers = get_default_feature_layers(config, backbone)
+        feature_layers = get_maskrcnn_feature_layers(config, backbone)
     else:
         feature_layers = config.FEATURE_LAYERS
 

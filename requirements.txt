@@ -1,2 +1,3 @@
 tensorflow-gpu
 pycocotools
+shapely

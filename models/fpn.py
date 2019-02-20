@@ -1,4 +1,4 @@
-from models.keras_model_wrapper import SemanticModelWrapper
+from keras_model_wrapper import SemanticModelWrapper
 from segmentation_models.fpn.builder import build_fpn
 
 ############################################################

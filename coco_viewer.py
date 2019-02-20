@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from data_generators.coco_dataset import CocoDataset
 from data_generators.semantic.data_generator import load_image_gt
-from maskrcnn.utils import extract_bboxes
+from mask_rcnn.utils import extract_bboxes
 from visual_tools.visualize import display_instances, display_segmentation
 from visual_tools.gui_viewer import GuiViewer
 

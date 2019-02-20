@@ -42,7 +42,9 @@ from collections import OrderedDict
 
 # blade_id = 1
 # category_ids = {
-#     '(0, 255, 0)': blade_id
+#     '(0, 255, 0)': blade_id,
+#     '(0, 254, 0)': blade_id,
+#     '(0, 253, 0)': blade_id,
 # }
 # categories = [
 #     OrderedDict(
@@ -70,3 +72,28 @@ categories = [
         ]
     )
 ]
+
+# blade_id = 1
+# nose_id = 2
+# category_ids = {
+#     '(0, 255, 0)': blade_id,
+#     '(0, 254, 0)': blade_id,
+#     '(0, 253, 0)': blade_id,
+#     '(0, 0, 255)': nose_id
+# }
+# categories = [
+#     OrderedDict(
+#         [
+#             ("supercategory", "windturbine"),
+#             ("id", blade_id),
+#             ("name", "blade")
+#         ]
+#     ),
+#     OrderedDict(
+#         [
+#             ("supercategory", "windturbine"),
+#             ("id", nose_id),
+#             ("name", "nose")
+#         ]
+#     ),
+# ]

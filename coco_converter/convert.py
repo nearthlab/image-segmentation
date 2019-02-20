@@ -1,4 +1,4 @@
-from .util import create_cocodata_json
+from utils import create_cocodata_json
 import argparse
 import os
 

@@ -9,7 +9,7 @@ from matplotlib import patches
 from matplotlib import lines
 from matplotlib.patches import Polygon
 
-from maskrcnn.utils import compute_matches
+from mask_rcnn.utils import compute_matches
 from data_generators.utils import unmold_mask
 
 
