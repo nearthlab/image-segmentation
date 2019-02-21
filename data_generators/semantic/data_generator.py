@@ -2,8 +2,6 @@ import logging
 import numpy as np
 
 from scipy.ndimage.morphology import binary_dilation
-from scipy.ndimage.morphology import distance_transform_edt
-from skimage.filters import sobel
 
 from data_generators.utils import resize_image, resize_mask
 from classification_models import Classifiers
@@ -34,24 +32,8 @@ def load_image_gt(dataset, image_id, image_size):
             masks[:, :, c1] = np.logical_and(masks[:, :, c1], not_intersection)
             masks[:, :, c2] = np.logical_and(masks[:, :, c2], not_intersection)
 
-    # # erode masks for preventing overlapping masks of different instances in the same class
-    # for c in range(masks.shape[-1]):
-    #     masks[:, :, c] = binary_erosion(masks[:, :, c], iterations=2).astype(masks.dtype)
-
     return image, merge_masks(masks, class_ids, dataset.num_classes - 1)
 
-
-def get_weight_mask(mask, eps=0.5):
-    weight_mask = np.zeros(mask.shape)
-
-    for c in range(mask.shape[-1]):
-        sobel_edge = sobel(mask[:, :, c])
-        sobel_edge[sobel_edge > 0] = 1.0
-        sobel_edge = 1.0 - sobel_edge
-        edt_map = distance_transform_edt(sobel_edge)
-        weight_mask[:, :, c] = 1.0 - eps * np.interp(edt_map, (edt_map.min(), edt_map.max()), (0.0, 1.0))
-
-    return np.mean(weight_mask, axis=-1)
 
 # num_classes: exclude background
 def merge_masks(masks, class_ids, num_classes):
@@ -105,7 +87,6 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
             # Get GT bounding boxes and masks for image.
             image_id = image_ids[image_index]
             image, gt_mask = load_image_gt(dataset, image_id, config.IMAGE_SIZE)
-            weight_mask = get_weight_mask(gt_mask)
 
             # Init batch arrays
             if b == 0:
@@ -114,20 +95,16 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
                 batch_gt_mask = np.zeros(
                     (batch_size, gt_mask.shape[0], gt_mask.shape[1],
                      config.NUM_CLASSES - 1), dtype=gt_mask.dtype)
-                batch_weight_mask = np.zeros(
-                    (batch_size, weight_mask.shape[0], weight_mask.shape[1]),
-                    dtype=gt_mask.dtype)
 
             # Add to batch
             batch_images[b] = preprocess_input(image.astype(np.float32))
             batch_gt_mask[b, :, :, :] = gt_mask
-            batch_weight_mask[b, :, :] = weight_mask
 
             b += 1
 
             # Batch full?
             if b >= batch_size:
-                inputs = [batch_images, batch_gt_mask, batch_weight_mask]
+                inputs = [batch_images, batch_gt_mask]
                 outputs = []
 
                 yield inputs, outputs

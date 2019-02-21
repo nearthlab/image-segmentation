@@ -16,8 +16,9 @@ from segmentation_models.losses import jaccard_loss as jaccard_loss_graph
 from segmentation_models.losses import dice_loss as dice_loss_graph
 
 
-def weighted_bce_loss_graph(gt, pr, w):
-    return K.mean(w * K.clip(binary_crossentropy(gt, pr), K.epsilon(), 1.0))
+def bce_loss_graph(gt, pr):
+    return K.mean(binary_crossentropy(gt, pr))
+    # return K.mean(w * K.clip(binary_crossentropy(gt, pr), K.epsilon(), 1.0))
 
 ############################################################
 #  Semantic Segmentation Model Class
@@ -56,12 +57,8 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
                 shape=[self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, None],
                 name='input_gt_masks', dtype=float)
 
-            input_weight_mask = Input(
-                shape=[self.config.IMAGE_SIZE, self.config.IMAGE_SIZE],
-                name='input_weight_mask', dtype=float)
-
-            wbce_loss = Lambda(lambda x: weighted_bce_loss_graph(*x), name='wbce_loss') \
-                ([input_gt_masks, base_model.output, input_weight_mask])
+            bce_loss = Lambda(lambda x: bce_loss_graph(*x), name='bce_loss') \
+                ([input_gt_masks, base_model.output])
 
             jaccard_loss = Lambda(lambda x: jaccard_loss_graph(*x), name='jaccard_loss') \
                 ([input_gt_masks, base_model.output])
@@ -70,9 +67,9 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
                 ([input_gt_masks, base_model.output])
 
             inputs = base_model.inputs
-            inputs += [input_gt_masks, input_weight_mask]
+            inputs += [input_gt_masks]
             outputs = base_model.outputs
-            outputs += [wbce_loss, jaccard_loss, dice_loss]
+            outputs += [bce_loss, jaccard_loss, dice_loss]
             model = Model(inputs, outputs, name=name)
 
             return model

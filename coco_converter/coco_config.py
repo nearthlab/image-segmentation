@@ -40,6 +40,7 @@ from collections import OrderedDict
 #     )
 # ]
 
+# # version 1: blade only
 # blade_id = 1
 # category_ids = {
 #     '(0, 255, 0)': blade_id,
@@ -56,23 +57,25 @@ from collections import OrderedDict
 #     )
 # ]
 
-blade_id = 1
-category_ids = {
-    '(0, 255, 0)': blade_id,
-    '(0, 254, 0)': blade_id,
-    '(0, 253, 0)': blade_id,
-    '(255, 255, 0)': blade_id
-}
-categories = [
-    OrderedDict(
-        [
-            ("supercategory", "windturbine"),
-            ("id", blade_id),
-            ("name", "blade")
-        ]
-    )
-]
+# # version 2: blade == pole
+# blade_id = 1
+# category_ids = {
+#     '(0, 255, 0)': blade_id,
+#     '(0, 254, 0)': blade_id,
+#     '(0, 253, 0)': blade_id,
+#     '(255, 255, 0)': blade_id
+# }
+# categories = [
+#     OrderedDict(
+#         [
+#             ("supercategory", "windturbine"),
+#             ("id", blade_id),
+#             ("name", "blade")
+#         ]
+#     )
+# ]
 
+# # version 3: blade + nose
 # blade_id = 1
 # nose_id = 2
 # category_ids = {
@@ -97,3 +100,30 @@ categories = [
 #         ]
 #     ),
 # ]
+
+# version 4: (blade == pole) + nose
+blade_id = 1
+nose_id = 2
+category_ids = {
+    '(0, 255, 0)': blade_id,
+    '(0, 254, 0)': blade_id,
+    '(0, 253, 0)': blade_id,
+    '(255, 255, 0)': blade_id,
+    '(0, 0, 255)': nose_id
+}
+categories = [
+    OrderedDict(
+        [
+            ("supercategory", "windturbine"),
+            ("id", blade_id),
+            ("name", "blade")
+        ]
+    ),
+    OrderedDict(
+        [
+            ("supercategory", "windturbine"),
+            ("id", nose_id),
+            ("name", "nose")
+        ]
+    ),
+]
