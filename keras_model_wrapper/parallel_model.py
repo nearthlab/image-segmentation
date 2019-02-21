@@ -68,7 +68,7 @@ class ParallelModel(KM.Model):
             outputs_all.append([])
 
         # Run the model call() on each GPU to place the ops there
-        for i in self.gpu_ids:
+        for i in range(len(self.gpu_ids)):
             with tf.device('/gpu:%d' % i):
                 with tf.name_scope('tower_%d' % i):
                     # Run a slice of inputs through this replica
