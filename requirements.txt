@@ -1,3 +1,4 @@
+segmentation-models
 tensorflow-gpu
 pycocotools
 shapely
