@@ -1,3 +1,6 @@
+# This file contains (modified) parts of codes from the following blog post:
+# http://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch
+
 from PIL import Image
 import numpy as np
 from skimage import measure

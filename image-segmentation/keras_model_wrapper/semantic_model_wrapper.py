@@ -11,14 +11,13 @@ from keras_model_wrapper import KerasModelWrapper
 from data_generators.utils import resize
 
 from classification_models import Classifiers
-from .feature_layers import get_feature_layers
+from segmentation_models.backbones import get_feature_layers
 from segmentation_models.losses import jaccard_loss as jaccard_loss_graph
 from segmentation_models.losses import dice_loss as dice_loss_graph
 
 
 def bce_loss_graph(gt, pr):
     return K.mean(binary_crossentropy(gt, pr))
-    # return K.mean(w * K.clip(binary_crossentropy(gt, pr), K.epsilon(), 1.0))
 
 ############################################################
 #  Semantic Segmentation Model Class

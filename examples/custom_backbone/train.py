@@ -38,11 +38,11 @@ if __name__ == '__main__':
                         metavar='/path/to/weights.h5',
                         help='Path to maskrcnn weights.h5 file')
     parser.add_argument('-m', '--model_cfg', required=False,
-                        default='maskrcnn.cfg',
+                        default='configs/maskrcnn.cfg',
                         metavar='/path/to/model.cfg',
                         help='Path to model.cfg file')
     parser.add_argument('-t', '--train_cfg', required=False,
-                        default='train_heads.cfg train_stage3up.cfg train_all.cfg',
+                        default=['configs/train_heads.cfg', 'configs/train_stage3up.cfg', 'configs/train_all.cfg'],
                         nargs='+',
                         metavar='path/to/train.cfg',
                         help='Path to train.cfg file(s) [More than one can be provided]')

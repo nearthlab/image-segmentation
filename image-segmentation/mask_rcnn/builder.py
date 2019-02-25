@@ -37,7 +37,7 @@ from keras.layers import Concatenate
 from keras.backend import shape
 
 from classification_models import Classifiers
-from keras_model_wrapper import get_feature_layers
+from segmentation_models.backbones import get_feature_layers
 from segmentation_models.utils import get_layer_number
 
 from .utils import norm_boxes_graph, get_anchors

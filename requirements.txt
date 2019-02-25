@@ -1,6 +1,4 @@
 segmentation-models==0.2.0
-keras==2.2.0
-keras-application==1.0.7
 tensorflow-gpu>=1.8.0
 pycocotools
 shapely

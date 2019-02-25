@@ -29,7 +29,7 @@ import tensorflow as tf
 from keras.engine import Layer
 
 from ..utils import batch_slice, apply_box_deltas_graph,\
-                                    clip_boxes_graph, norm_boxes_graph
+    clip_boxes_graph, norm_boxes_graph
 from data_generators.utils import parse_image_meta_graph
 
 
