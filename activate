@@ -1,2 +1,2 @@
 source ../venv/bin/activate
-export PYTHONPATH=`pwd`:`pwd`/submodules/classification_models:`pwd`/submodules/segmentation_models
+export PYTHONPATH=`pwd`/image-segmentation

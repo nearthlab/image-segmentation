@@ -2,7 +2,8 @@ import os
 import argparse
 from shutil import copyfile
 
-from models import get_model_wrapper, Trainer
+from models import get_model_wrapper
+from keras_model_wrapper import Trainer
 from config import load_config
 
 ############################################################
@@ -34,9 +35,9 @@ if __name__ == '__main__':
                         metavar='path/to/train.cfg',
                         help='Path to train.cfg file(s) [More than one can be provided]')
     parser.add_argument('-s', '--workspace', required=False,
-                        default='seg_ws/',
+                        default='logs',
                         metavar='/path/to/workspace/',
-                        help='Workspace is a parent directory containing log directories (default=seg_ws/)')
+                        help='Workspace is a parent directory containing log directories (default=logs)')
     args = parser.parse_args()
 
     print('Model weights: ', args.weights)
