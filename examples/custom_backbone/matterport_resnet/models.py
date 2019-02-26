@@ -35,7 +35,7 @@ def ResNet50(input_shape, input_tensor=None, weights=None,
                          classes=classes,
                          include_top=include_top)
 
-    model.name = 'matterport_resnet50'
+    model.name = 'resnet50'
 
     if weights:
         load_model_weights(weights_collection, model, weights, classes, include_top)
@@ -49,7 +49,7 @@ def ResNet101(input_shape, input_tensor=None, weights=None,
                          block_count=22,
                          classes=classes,
                          include_top=include_top)
-    model.name = 'matterport_resnet101'
+    model.name = 'resnet101'
 
     if weights:
         raise NotImplemented
