@@ -34,6 +34,8 @@ from skimage.measure import find_contours
 from matplotlib import patches
 from matplotlib.patches import Polygon
 
+from mask_rcnn.utils import extract_bboxes
+
 
 def random_colors(N, bright=True):
     """
@@ -44,7 +46,8 @@ def random_colors(N, bright=True):
     brightness = 1.0 if bright else 0.7
     hsv = [(i / N, 1, brightness) for i in range(N)]
     colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
-    random.shuffle(colors)
+    # Use random.Random(*) to produce the same sequence of random colors every time
+    random.Random(4).shuffle(colors)
     return colors
 
 
@@ -146,7 +149,7 @@ def draw_instances(image, boxes, masks, class_ids, class_names=None, scores = No
         if class_names:
             class_id = class_ids[i]
             score = scores[i] if scores is not None else None
-            label = class_names[str(class_id)]
+            label = class_names[class_id]
             caption = "{} {:.3f}".format(label, score) if score else label
             ax.text(x1, y1 + 8, caption,
                     color='w', size=11, backgroundcolor="none")
@@ -211,6 +214,7 @@ def draw_segmentation(image, masks, class_names=None,
     ax.axis('off')
     ax.set_title(title)
 
+    nonempty_mask_count = 0
     for i in range(N):
         color = colors[i]
 
@@ -219,11 +223,13 @@ def draw_segmentation(image, masks, class_names=None,
 
         # Label
         if class_names:
-            label = class_names[str(i)]
-            x, y = find_mask_center(mask)
-            if x and y:
-                ax.text(y, x, label,
-                    color='w', size=11, backgroundcolor="none")
+            label = class_names[i]
+
+            if not np.array_equal(mask, np.zeros(mask.shape)):
+                x, y = width + 10, 40 * nonempty_mask_count
+                nonempty_mask_count += 1
+                ax.text(x, y, label,
+                    color=colors[i], size=20, backgroundcolor="black")
 
         masked_image = apply_mask(masked_image, mask, colors[i])
 

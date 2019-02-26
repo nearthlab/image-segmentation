@@ -22,7 +22,11 @@ def create_sub_masks(mask_image):
     for x in range(width):
         for y in range(height):
             # Get the RGB values of the pixel
-            pixel = mask_image.getpixel((x,y))[:3]
+            pixel = mask_image.getpixel((x,y))
+            if not isinstance(pixel, int):
+                pixel = pixel[:3]
+            else:
+                pixel = (pixel, pixel, pixel)
 
             # If the pixel is one of the target pixels...
             if pixel in target_pixels:

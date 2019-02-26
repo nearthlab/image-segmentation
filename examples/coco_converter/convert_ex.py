@@ -8,11 +8,8 @@ parser.add_argument('-j', '--json_path', help='The result json file name', requi
 args = parser.parse_args()
 
 image_dir = os.path.join(args.path, 'images')
-label_dir = os.path.join(args.path, 'segmentations')
+label_dir = os.path.join(args.path, 'semantic')
 assert os.path.exists(image_dir), 'No such directory: {}'.format(image_dir)
 assert os.path.exists(label_dir), 'No such directory: {}'.format(label_dir)
 
-create_cocodata_json(args.json_path,
-                     image_dir,
-                     label_dir
-                     )
+create_cocodata_json(args.json_path, image_dir, label_dir)

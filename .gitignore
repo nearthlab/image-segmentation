@@ -1,5 +1,6 @@
 **/__pycache__/*
 **/*.h5
+**/*.pyc
 datasets/*/
 playground.py
 plans/*/

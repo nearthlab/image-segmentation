@@ -14,10 +14,13 @@ class GuiCocoViewer(GuiViewer):
         self.dataset = dataset
         if self.mode == 'semantic':
             self.class_names = [''] * self.dataset.num_classes
-            for info in self.dataset.class_info:
-                if info['id'] > 0:
-                    self.class_names[info['id']] = info['name']
-            self.class_names.remove('')
+
+            for i, info in enumerate(self.dataset.class_info):
+                self.class_names[i] = info['name']
+
+            if 'BG' in self.class_names:
+                self.class_names.remove('BG')
+
         self.num_images = self.dataset.num_images
 
         self.create_slider()

@@ -34,7 +34,7 @@ from data_generators.utils import resize_image, resize_mask
 from classification_models import Classifiers
 
 
-def load_image_gt(dataset, image_id, image_size):
+def load_image_gt(dataset, image_id, image_size, erase_overlapping_mask = False):
     """Load and return ground truth data for an image (image, mask, bounding boxes).
 
     Returns:
@@ -52,12 +52,14 @@ def load_image_gt(dataset, image_id, image_size):
         masks = resize_mask(masks, scale, padding, crop)
 
     # erase intersection to prevent masks of different instances in the same class from overlapping
-    for c1 in range(masks.shape[-1] - 1):
-        for c2 in range(c1 + 1, masks.shape[-1]):
-            intersection = binary_dilation(masks[:, :, c1]) * binary_dilation(masks[:, :, c2])
-            not_intersection = np.logical_not(binary_dilation(intersection))
-            masks[:, :, c1] = np.logical_and(masks[:, :, c1], not_intersection)
-            masks[:, :, c2] = np.logical_and(masks[:, :, c2], not_intersection)
+    if erase_overlapping_mask:
+        for c1 in range(masks.shape[-1] - 1):
+            for c2 in range(c1 + 1, masks.shape[-1]):
+                if class_ids[c1] == class_ids[c2]:
+                    intersection = binary_dilation(masks[:, :, c1]) * binary_dilation(masks[:, :, c2])
+                    not_intersection = np.logical_not(binary_dilation(intersection))
+                    masks[:, :, c1] = np.logical_and(masks[:, :, c1], not_intersection)
+                    masks[:, :, c2] = np.logical_and(masks[:, :, c2], not_intersection)
 
     return image, merge_masks(masks, class_ids, dataset.num_classes - 1)
 
@@ -65,14 +67,10 @@ def load_image_gt(dataset, image_id, image_size):
 # num_classes: exclude background
 def merge_masks(masks, class_ids, num_classes):
     image_dim = masks.shape[0:2]
-    merged_masks = [np.zeros(shape=image_dim)] * num_classes
+    merged_mask = np.zeros(shape=(*image_dim, num_classes))
 
     for i in range(masks.shape[-1]):
-        merged_masks[class_ids[i] - 1] = np.maximum(merged_masks[class_ids[i] - 1], masks[:, :, i])
-
-    merged_mask = np.zeros(shape=(*image_dim, num_classes))
-    for i in range(num_classes):
-        merged_mask[:, :, i] = merged_masks[i]
+        merged_mask[:, :, class_ids[i] - 1] = np.maximum(merged_mask[:, :, class_ids[i] - 1], masks[:, :, i])
 
     return merged_mask
 

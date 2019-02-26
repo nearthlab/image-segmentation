@@ -50,7 +50,8 @@ if __name__ == '__main__':
     if args.label is not None:
         assert os.path.exists(args.label)
         fp = open(args.label, 'r')
-        coco_label = json.load(fp)
+        json_content = json.load(fp)
+        coco_label = {int(key): json_content(key) for key in json_content}
         fp.close()
     else:
         coco_label = None
