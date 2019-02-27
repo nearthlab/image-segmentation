@@ -34,7 +34,7 @@ from skimage.measure import find_contours
 from matplotlib import patches
 from matplotlib.patches import Polygon
 
-from mask_rcnn.utils import extract_bboxes
+from data_generators.utils import extract_bboxes
 
 
 def random_colors(N, bright=True):

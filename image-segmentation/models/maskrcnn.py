@@ -90,7 +90,7 @@ def unmold_detections(detections, mrcnn_mask, original_image_shape,
 
     # Translate normalized coordinates in the resized image to pixel
     # coordinates in the original image before resizing
-    window = norm_boxes(window, image_shape[0])
+    window = norm_boxes(window, image_shape)
     wy1, wx1, wy2, wx2 = window
     shift = np.array([wy1, wx1, wy1, wx1])
     wh = wy2 - wy1  # window height
@@ -150,8 +150,8 @@ class MaskRCNN(KerasModelWrapper):
         super(MaskRCNN, self).predict(image, threshold)
 
         height, width = image.shape[:2]
-        if image.shape != (self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, 3):
-            image = resize(image, output_shape=(self.config.IMAGE_SIZE, self.config.IMAGE_SIZE), preserve_range=True)
+        if image.shape != self.config.IMAGE_SHAPE:
+            image = resize(image, output_shape=(self.config.IMAGE_HEIGHT, self.config.IMAGE_WIDTH), preserve_range=True)
 
         # Mold inputs to format expected by the neural network
         molded_image, image_meta, window = mold_inputs(image, self.config)
@@ -174,8 +174,8 @@ class MaskRCNN(KerasModelWrapper):
                               image.shape, molded_image.shape,
                               window, threshold)
 
-        rate_x = width / self.config.IMAGE_SIZE
-        rate_y = height / self.config.IMAGE_SIZE
+        rate_x = width / self.config.IMAGE_WIDTH
+        rate_y = height / self.config.IMAGE_HEIGHT
         final_rois = np.zeros(rois.shape)
         final_masks = np.zeros((height, width, rois.shape[0]))
         for i in range(rois.shape[0]):

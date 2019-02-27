@@ -71,12 +71,12 @@ def get_maskrcnn_feature_layers(config, backbone):
 
 def build_maskrcnn(config):
     # Image size must be dividable by 2 multiple times
-    if config.IMAGE_SIZE % 64 != 0:
+    if config.IMAGE_WIDTH % 64 != 0 and config.IMAGE_HEIGHT % 64 != 0:
         raise Exception('Image size must be dividable by 2 at least 6 times '
                         'to avoid fractions when downscaling and upscaling.'
                         'For example, use 256, 320, 384, 448, 512, ... etc. ')
 
-    image_shape = (config.IMAGE_SIZE, config.IMAGE_SIZE, 3)
+    image_shape = config.IMAGE_SHAPE
     # Inputs
     input_image = Input(
         shape=image_shape, name='input_image')

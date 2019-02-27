@@ -4,8 +4,7 @@ import argparse
 from tqdm import tqdm
 from config import load_config
 from models import get_model_wrapper
-from data_generators import CocoDataset
-from data_generators.semantic import load_image_gt
+from data_generators.kitti import load_image_gt, KittiDataset
 
 def compute_confusion_matrix(gt_mask, pr_mask, num_classes):
 
@@ -33,10 +32,6 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dataset', required=True,
                         metavar='/path/to/coco/',
                         help='Directory of the MS-COCO dataset')
-    parser.add_argument('--tag', required=False,
-                        default='v1',
-                        metavar='<tag>',
-                        help='Tag of the MS-COCO dataset (v1 or v2) (default=v1)')
     parser.add_argument('-t', '--threshold', required=False,
                         type=float,
                         default=0.5,
@@ -47,29 +42,18 @@ if __name__ == '__main__':
     model = get_model_wrapper(load_config(args.model_cfg))
     model.load_weights(args.weights)
 
-    dataset = CocoDataset()
-    dataset.load_coco(args.dataset, 'val', args.tag)
-    dataset.prepare()
+    dataset = KittiDataset()
+    dataset.load_kitti(args.dataset, 'val')
 
     assert dataset.num_classes == model.config.NUM_CLASSES
 
     num_classes = dataset.num_classes
 
-    import matplotlib.pyplot as plt
-    _, ax1 = plt.subplots(1, figsize=(16, 16), num='image')
-    _, ax2 = plt.subplots(1, figsize=(16, 16), num='gt')
-    _, ax3 = plt.subplots(1, figsize=(16, 16), num='pr')
-
     confusion_matrix = np.zeros((num_classes, num_classes))
     for i in tqdm(range(dataset.num_images)):
-        img, gt_mask = load_image_gt(dataset, i, model.config.IMAGE_SIZE)
+        img, gt_mask = load_image_gt(dataset, i, model.config.IMAGE_SHAPE)
         pr_mask = model.predict(img.astype(np.float32), args.threshold)
         confusion_matrix += compute_confusion_matrix(gt_mask.astype(np.int), pr_mask.astype(np.int), num_classes)
-        # ax1.imshow(img)
-        # ax2.imshow(gt_mask[:, :, 0])
-        # ax3.imshow(pr_mask[:, :, 0])
-        # plt.show()
-        # break
 
     # The measures below are implementation of standard measures
     # introduced in the following paper:

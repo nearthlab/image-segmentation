@@ -16,19 +16,19 @@ def _get_layer_by_factor(feature_layers, factor):
         raise ValueError('Unsupported factor - `{}`, Use 4, 8 or 16.'.format(factor))
 
 
-def _shape_guard(factor, input_size):
+def _shape_guard(factor, input_shape):
     min_size = factor * 6
 
-    res = (input_size % min_size != 0 or input_size < min_size)
+    res = (input_shape[0] % min_size != 0 or input_shape[0] < min_size) or (input_shape[1] % min_size != 0 or input_shape[1] < min_size)
     if res:
-        raise ValueError('Wrong input size {}, input H and W should '.format(input_size) +
+        raise ValueError('Wrong input size {}, input H and W should '.format(input_shape) +
                          'be divisible by `{}`'.format(min_size))
 
 class PSPNet(SemanticModelWrapper):
 
     def build(self):
         super(PSPNet, self).build()
-        _shape_guard(self.config.DOWNSAMPLE_FACTOR, self.config.IMAGE_SIZE)
+        _shape_guard(self.config.DOWNSAMPLE_FACTOR, self.config.IMAGE_SHAPE)
 
         backbone, feature_layers = self.get_backbone_and_feature_layers(3)
 

@@ -28,13 +28,11 @@
 import logging
 import numpy as np
 
-from scipy.ndimage.morphology import binary_dilation
-
-from data_generators.utils import resize_image, resize_mask
+from data_generators.utils import resize_image, resize_mask, minimize_mask
 from classification_models import Classifiers
 
 
-def load_image_gt(dataset, image_id, image_size, erase_overlapping_mask = False):
+def load_image_gt(dataset, image_id, image_shape, use_mini_mask=False, mini_mask_shape=None):
     """Load and return ground truth data for an image (image, mask, bounding boxes).
 
     Returns:
@@ -44,35 +42,17 @@ def load_image_gt(dataset, image_id, image_size, erase_overlapping_mask = False)
     """
     # Load image and mask
     image = dataset.load_image(image_id)
-    masks, class_ids = dataset.load_mask(image_id)
+    masks = dataset.load_mask(image_id)
 
     # Resize image and mask
-    if image_size:
-        image, window, scale, padding, crop = resize_image(image, image_size)
-        masks = resize_mask(masks, scale, padding, crop)
+    if image_shape:
+        image, window, scale, padding = resize_image(image, image_shape)
+        masks = resize_mask(masks, scale, padding)
+        if use_mini_mask:
+            bboxes = [[0, 0, masks.shape[0], masks.shape[1]]] * masks.shape[-1]
+            masks = minimize_mask(bboxes, masks, mini_mask_shape)
 
-    # erase intersection to prevent masks of different instances in the same class from overlapping
-    if erase_overlapping_mask:
-        for c1 in range(masks.shape[-1] - 1):
-            for c2 in range(c1 + 1, masks.shape[-1]):
-                if class_ids[c1] == class_ids[c2]:
-                    intersection = binary_dilation(masks[:, :, c1]) * binary_dilation(masks[:, :, c2])
-                    not_intersection = np.logical_not(binary_dilation(intersection))
-                    masks[:, :, c1] = np.logical_and(masks[:, :, c1], not_intersection)
-                    masks[:, :, c2] = np.logical_and(masks[:, :, c2], not_intersection)
-
-    return image, merge_masks(masks, class_ids, dataset.num_classes - 1)
-
-
-# num_classes: exclude background
-def merge_masks(masks, class_ids, num_classes):
-    image_dim = masks.shape[0:2]
-    merged_mask = np.zeros(shape=(*image_dim, num_classes))
-
-    for i in range(masks.shape[-1]):
-        merged_mask[:, :, class_ids[i] - 1] = np.maximum(merged_mask[:, :, class_ids[i] - 1], masks[:, :, i])
-
-    return merged_mask
+    return image, masks
 
 
 def data_generator(dataset, config, shuffle=True, batch_size=1):
@@ -111,7 +91,7 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
 
             # Get GT bounding boxes and masks for image.
             image_id = image_ids[image_index]
-            image, gt_mask = load_image_gt(dataset, image_id, config.IMAGE_SIZE)
+            image, gt_mask = load_image_gt(dataset, image_id, config.IMAGE_SHAPE, config.USE_MINI_MASK, config.MINI_MASK_SHAPE)
 
             # Init batch arrays
             if b == 0:
@@ -141,8 +121,7 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
             raise
         except:
             # Log it and skip the image
-            logging.exception("Error processing image {}".format(
-                dataset.image_info[image_id]))
+            logging.exception("Error processing image {}".format(image_id))
             error_count += 1
             if error_count > 5:
                 raise

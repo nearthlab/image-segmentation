@@ -1,5 +1,6 @@
 from abc import *
 import numpy as np
+import tensorflow as tf
 
 import keras.backend as K
 from keras.models import Model
@@ -8,7 +9,7 @@ from keras.losses import binary_crossentropy
 
 from keras_model_wrapper import KerasModelWrapper
 
-from data_generators.utils import resize
+from data_generators.utils import resize_image, unresize_image
 
 from classification_models import Classifiers
 from segmentation_models.backbones import get_feature_layers
@@ -29,10 +30,9 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
     def build(self):
         super(SemanticModelWrapper, self).build()
 
-
     def get_backbone_and_feature_layers(self, num_feature_layers):
         super(SemanticModelWrapper, self).build()
-        image_shape = (self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, 3)
+        image_shape = self.config.IMAGE_SHAPE
         classifier, self.preprocess_input = Classifiers.get(self.config.BACKBONE)
         backbone = classifier(input_shape=image_shape,
                                 input_tensor=None,
@@ -49,21 +49,44 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
 
         return backbone, feature_layers
 
+    def resize_mask_graph(self, mask):
+        new_shape = tf.constant(self.config.MINI_MASK_SHAPE, dtype=tf.int32)
+        return tf.image.resize_bilinear(mask, new_shape)
+
 
     def resolve_input_output(self, base_model, name):
         if self.config.MODE == 'training':
-            input_gt_masks = Input(
-                shape=[self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, None],
-                name='input_gt_masks', dtype=float)
+            if self.config.USE_MINI_MASK:
+                input_gt_masks = Input(
+                    shape=[
+                        self.config.MINI_MASK_SHAPE[0],
+                        self.config.MINI_MASK_SHAPE[1],
+                        self.config.NUM_CLASSES - 1
+                    ],
+                    name='input_gt_masks', dtype=float)
+
+                output_mask = Lambda(lambda x: self.resize_mask_graph(x), name='resize_mask') \
+                    (base_model.output)
+
+            else:
+                input_gt_masks = Input(
+                    shape=[
+                        self.config.IMAGE_HEIGHT,
+                        self.config.IMAGE_WIDTH,
+                        self.config.NUM_CLASSES - 1
+                    ],
+                    name='input_gt_masks', dtype=float)
+
+                output_mask = base_model.output
 
             bce_loss = Lambda(lambda x: bce_loss_graph(*x), name='bce_loss') \
-                ([input_gt_masks, base_model.output])
+                ([input_gt_masks, output_mask])
 
             jaccard_loss = Lambda(lambda x: jaccard_loss_graph(*x), name='jaccard_loss') \
-                ([input_gt_masks, base_model.output])
+                ([input_gt_masks, output_mask])
 
             dice_loss = Lambda(lambda x: dice_loss_graph(*x), name='dice_loss') \
-                ([input_gt_masks, base_model.output])
+                ([input_gt_masks, output_mask])
 
             inputs = base_model.inputs
             inputs += [input_gt_masks]
@@ -86,8 +109,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
         super(SemanticModelWrapper, self).predict(image, threshold)
 
         height, width = image.shape[:2]
-        if image.shape != (self.config.IMAGE_SIZE, self.config.IMAGE_SIZE, 3):
-            image = resize(image, output_shape=(self.config.IMAGE_SIZE, self.config.IMAGE_SIZE), preserve_range=True)
+        image, window, scale, padding = resize_image(image, self.config.IMAGE_SHAPE)
         input = self.preprocess_input(image)
         input = np.expand_dims(input, axis=0).astype(np.float32)
         res = self.model.predict(input, batch_size=1)[0]
@@ -95,7 +117,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
         num_channels = res.shape[-1]
         final_result = np.zeros((height, width, num_channels))
         for i in range(num_channels):
-            resized_mask = resize(res[:, :, i], (height, width))
+            resized_mask = unresize_image(res[:, :, i], window, scale)
             resized_mask[resized_mask > threshold] = 1.0
             resized_mask[resized_mask <= threshold] = 0.0
             final_result[:, :, i] = resized_mask

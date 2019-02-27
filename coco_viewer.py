@@ -2,7 +2,7 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 
-from data_generators.coco_dataset import CocoDataset
+from data_generators.coco.coco_dataset import CocoDataset
 from visual_tools import GuiCocoViewer
 
 
@@ -13,9 +13,9 @@ if __name__ == '__main__':
                         metavar='/path/to/coco/',
                         help='Directory of the MS-COCO dataset')
     parser.add_argument('--tag', required=False,
-                        default='v1',
+                        default='2017',
                         metavar='<tag>',
-                        help='Tag of the MS-COCO dataset (v1 or v2) (default=v1)')
+                        help='Tag of the MS-COCO dataset (default=2017)')
     parser.add_argument('--subset', required=False,
                         default='train',
                         metavar="<subset>",

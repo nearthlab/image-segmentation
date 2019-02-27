@@ -6,15 +6,15 @@ from .box_util import norm_boxes
 #  Anchors
 ############################################################
 
-def compute_backbone_shapes(strides, image_size):
+def compute_backbone_shapes(strides, image_shape):
     '''Computes the width and height of each stage of the backbone network.
 
     Returns:
         [N, (height, width)]. Where N is the number of stages
     '''
     return np.array(
-        [[int(math.ceil(image_size / stride)),
-            int(math.ceil(image_size / stride))]
+        [[int(math.ceil(image_shape[0] / stride)),
+            int(math.ceil(image_shape[1] / stride))]
             for stride in strides])
 
 def generate_anchors(scales, ratios, shape, feature_stride, anchor_stride):
@@ -80,10 +80,10 @@ def get_anchors(config):
         get_anchors._anchor_cache = {}
 
     '''Returns anchor pyramid for the given image size.'''
-    backbone_shapes = compute_backbone_shapes(config.BACKBONE_STRIDES, config.IMAGE_SIZE)
+    backbone_shapes = compute_backbone_shapes(config.BACKBONE_STRIDES, config.IMAGE_SHAPE)
 
     # Cache anchors and reuse if image shape is the same
-    if not config.IMAGE_SIZE in get_anchors._anchor_cache:
+    if not config.IMAGE_SHAPE in get_anchors._anchor_cache:
         # Generate Anchors
         a = generate_pyramid_anchors(
             config.RPN_ANCHOR_SCALES,
@@ -92,6 +92,6 @@ def get_anchors(config):
             config.BACKBONE_STRIDES,
             config.RPN_ANCHOR_STRIDE)
         # Normalize coordinates
-        get_anchors._anchor_cache[config.IMAGE_SIZE] = norm_boxes(a, config.IMAGE_SIZE)
+        get_anchors._anchor_cache[config.IMAGE_SHAPE] = norm_boxes(a, config.IMAGE_SHAPE)
 
-    return get_anchors._anchor_cache[config.IMAGE_SIZE]
+    return get_anchors._anchor_cache[config.IMAGE_SHAPE]

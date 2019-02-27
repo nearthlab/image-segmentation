@@ -20,9 +20,9 @@ if __name__ == '__main__':
                         metavar='/path/to/coco/',
                         help='Directory of the MS-COCO dataset')
     parser.add_argument('--tag', required=False,
-                        default='v1',
+                        default='2017',
                         metavar='<tag>',
-                        help='Tag of the MS-COCO dataset (v1 or v2) (default=v1)')
+                        help='Tag of the MS-COCO dataset (default=2017)')
     parser.add_argument('-w', '--weights', required=False,
                         default=None,
                         metavar='/path/to/weights.h5',

@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 from visual_tools import GuiInferenceViewer
 
 # Import your custom backbone
-from matterport_resnet import ResNet101, preprocess_input
+from matterport_resnet import ResNet50, ResNet101, preprocess_input
 
 # You can add or override existing backbone model
 # and corresponding preprocessing function as follows:
 from classification_models import Classifiers
 Classifiers._models.update({
+    'resnet50': [ResNet50, preprocess_input],
     'resnet101': [ResNet101, preprocess_input],
 })
 
@@ -21,9 +22,9 @@ if __name__ == '__main__':
         description='Run Mask R-CNN detector.')
 
     parser.add_argument('-c', '--model_cfg', required=False,
-                        default='infer.cfg',
-                        metavar='/path/to/model.cfg',
-                        help='Path to model.cfg file')
+                        default='MaskRCNN_coco.cfg',
+                        metavar='/path/to/MaskRCNN_coco.cfg',
+                        help='Path to MaskRCNN_coco.cfg file')
     parser.add_argument('-i', '--image_dir', required=False,
                         default='images',
                         metavar='/path/to/directory',
@@ -51,7 +52,7 @@ if __name__ == '__main__':
         assert os.path.exists(args.label)
         fp = open(args.label, 'r')
         json_content = json.load(fp)
-        coco_label = {int(key): json_content(key) for key in json_content}
+        coco_label = {int(key): json_content[key] for key in json_content}
         fp.close()
     else:
         coco_label = None

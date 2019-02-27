@@ -5,31 +5,6 @@ import tensorflow as tf
 #  Bounding Boxes
 ############################################################
 
-def extract_bboxes(mask):
-    '''Compute bounding boxes from masks.
-    mask: [height, width, num_instances]. Mask pixels are either 1 or 0.
-
-    Returns: bbox array [num_instances, (y1, x1, y2, x2)].
-    '''
-    boxes = np.zeros([mask.shape[-1], 4], dtype=np.int32)
-    for i in range(mask.shape[-1]):
-        m = mask[:, :, i]
-        # Bounding box.
-        horizontal_indicies = np.where(np.any(m, axis=0))[0]
-        vertical_indicies = np.where(np.any(m, axis=1))[0]
-        if horizontal_indicies.shape[0]:
-            x1, x2 = horizontal_indicies[[0, -1]]
-            y1, y2 = vertical_indicies[[0, -1]]
-            # x2 and y2 should not be part of the box. Increment by 1.
-            x2 += 1
-            y2 += 1
-        else:
-            # No mask for this instance. Might happen due to
-            # resizing or cropping. Set bbox to zeros
-            x1, x2, y1, y2 = 0, 0, 0, 0
-        boxes[i] = np.array([y1, x1, y2, x2])
-    return boxes.astype(np.int32)
-
 
 def compute_iou(box, boxes, box_area, boxes_area):
     '''Calculates IoU of the given box with the array of the given boxes.
@@ -248,7 +223,7 @@ def box_refinement_graph(box, gt_box):
     return result
 
 
-def norm_boxes(boxes, size):
+def norm_boxes(boxes, shape):
     '''Converts boxes from pixel coordinates to normalized coordinates.
     boxes: [N, (y1, x1, y2, x2)] in pixel coordinates
     shape: [..., (height, width)] in pixels
@@ -259,7 +234,7 @@ def norm_boxes(boxes, size):
     Returns:
         [N, (y1, x1, y2, x2)] in normalized coordinates
     '''
-    scale = np.array([size - 1, size - 1, size - 1, size - 1])
+    scale = np.array([shape[0] - 1, shape[1] - 1, shape[0] - 1, shape[1] - 1])
     shift = np.array([0, 0, 1, 1])
     return np.divide((boxes - shift), scale).astype(np.float32)
 

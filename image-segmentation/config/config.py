@@ -65,6 +65,9 @@ class Config:
         if hasattr(conf, 'NUM_CLASSES'):
             conf.IMAGE_META_SIZE = 1 + 3 + 3 + 4 + 1 + conf.NUM_CLASSES
 
+        if hasattr(conf, 'IMAGE_WIDTH') and hasattr(conf, 'IMAGE_HEIGHT'):
+            conf.IMAGE_SHAPE = (conf.IMAGE_HEIGHT, conf.IMAGE_WIDTH, 3)
+
         return conf
 
     def display(self):

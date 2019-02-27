@@ -70,7 +70,7 @@ def resize(image, output_shape, order=1, mode='constant', cval=0, clip=True,
             preserve_range=preserve_range)
 
 
-def resize_image(image, size):
+def resize_image(image, shape):
     """Resizes an image keeping the aspect ratio unchanged and adds padding
     to make sure the returned image has width and height both equal to size
     Returns:
@@ -89,26 +89,33 @@ def resize_image(image, size):
     window = (0, 0, h, w)
     scale = 1
     padding = [(0, 0), (0, 0), (0, 0)]
-    crop = None
 
-    scale = size / max(h, w)
+    scale = shape[0] / h if w/h <= shape[1]/shape[0] else shape[1] / w
 
     # Resize image using bilinear interpolation
     if scale != 1:
         image = resize(image, (round(h * scale), round(w * scale)),
                        preserve_range=True)
+    else:
+        return image, window, scale, padding
 
     # Get new height and width
     h, w = image.shape[:2]
-    top_pad = (size - h) // 2
-    bottom_pad = size - h - top_pad
-    left_pad = (size - w) // 2
-    right_pad = size - w - left_pad
+    top_pad = (shape[0] - h) // 2
+    bottom_pad = shape[0] - h - top_pad
+    left_pad = (shape[1] - w) // 2
+    right_pad = shape[1] - w - left_pad
     padding = [(top_pad, bottom_pad), (left_pad, right_pad), (0, 0)]
     image = np.pad(image, padding, mode='constant', constant_values=0)
     window = (top_pad, left_pad, h + top_pad, w + left_pad)
 
-    return image.astype(image_dtype), window, scale, padding, crop
+    return image.astype(image_dtype), window, scale, padding
+
+
+def unresize_image(image, window, scale):
+    cropped_image = image[window[0]:window[2]+1, window[1]:window[3]+1, :] if image.ndim == 3 else image[window[0]:window[2]+1, window[1]:window[3]+1]
+    h, w = window[2] - window[0], window[3] - window[1]
+    return resize(cropped_image, (round(h / scale), round(w / scale)), preserve_range=True)
 
 
 # This is for preventing loss explosion when training maskrcnn with a VGG backbone model
@@ -154,9 +161,15 @@ def minimize_mask(bbox, mask, mini_shape):
         # Pick slice and cast to bool in case load_mask() returned wrong dtype
         m = mask[:, :, i].astype(bool)
         y1, x1, y2, x2 = bbox[i][:4]
+        y1 = int(y1 * m.shape[0] + 0.5)
+        y2 = int(y2 * m.shape[0] + 0.5)
+        x1 = int(x1 * m.shape[1] + 0.5)
+        x2 = int(x2 * m.shape[1] + 0.5)
+
         m = m[y1:y2, x1:x2]
         if m.size == 0:
-            raise Exception('Invalid bounding box with area of zero')
+            continue
+            #raise Exception('Invalid bounding box with area of zero')
         # Resize with bilinear interpolation
         m = resize(m, mini_shape)
         mini_mask[:, :, i] = np.around(m).astype(np.bool)
@@ -275,3 +288,29 @@ def parse_image_meta_graph(meta):
         'scale': scale,
         'active_class_ids': active_class_ids,
     }
+
+
+def extract_bboxes(mask):
+    '''Compute bounding boxes from masks.
+    mask: [height, width, num_instances]. Mask pixels are either 1 or 0.
+
+    Returns: bbox array [num_instances, (y1, x1, y2, x2)].
+    '''
+    boxes = np.zeros([mask.shape[-1], 4], dtype=np.float32)
+    for i in range(mask.shape[-1]):
+        m = mask[:, :, i]
+        # Bounding box.
+        horizontal_indicies = np.where(np.any(m, axis=0))[0]
+        vertical_indicies = np.where(np.any(m, axis=1))[0]
+        if horizontal_indicies.shape[0]:
+            x1, x2 = horizontal_indicies[[0, -1]]
+            y1, y2 = vertical_indicies[[0, -1]]
+            # x2 and y2 should not be part of the box. Increment by 1.
+            x2 += 1
+            y2 += 1
+        else:
+            # No mask for this instance. Might happen due to
+            # resizing or cropping. Set bbox to zeros
+            x1, x2, y1, y2 = 0, 0, 0, 0
+        boxes[i] = np.array([y1 / mask.shape[0], x1 / mask.shape[1], y2 / mask.shape[0], x2 / mask.shape[1]])
+    return boxes.astype(np.float32)

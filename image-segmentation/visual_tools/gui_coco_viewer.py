@@ -1,7 +1,7 @@
 import os
 
-from data_generators.semantic import load_image_gt
-from mask_rcnn.utils import extract_bboxes
+from data_generators.kitti import load_image_gt
+from data_generators.utils import extract_bboxes
 from visual_tools.visualize import display_instances, display_segmentation
 from .gui_viewer import GuiViewer
 

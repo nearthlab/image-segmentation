@@ -153,7 +153,6 @@ class Dataset(object):
 
         return image
 
-
     def load_mask(self, image_id):
         """Load instance masks for the given image.
 

@@ -28,9 +28,9 @@
 import logging
 import numpy as np
 
-from data_generators.utils import resize, resize_image, resize_mask,\
-    minimize_mask, compose_image_meta, mold_image
-from mask_rcnn.utils import extract_bboxes, compute_iou, box_refinement,\
+from data_generators.utils import resize, resize_image, resize_mask, \
+    minimize_mask, compose_image_meta, mold_image, extract_bboxes
+from mask_rcnn.utils import compute_iou, box_refinement,\
     compute_overlaps, get_anchors
 
 
@@ -63,8 +63,8 @@ def load_image_gt(dataset, config, image_id, use_mini_mask=False):
     original_shape = image.shape
 
     # Resize image and mask
-    image, window, scale, padding, crop = resize_image(image, config.IMAGE_SIZE)
-    mask = resize_mask(mask, scale, padding, crop)
+    image, window, scale, padding = resize_image(image, config.IMAGE_SHAPE)
+    mask = resize_mask(mask, scale, padding)
 
     # Note that some boxes might be all zeros if the corresponding mask got cropped out.
     # and here is to filter them out
@@ -230,7 +230,7 @@ def build_detection_targets(rpn_rois, gt_class_ids, gt_boxes, gt_masks, config):
 
         if config.USE_MINI_MASK:
             # Create a mask placeholder, the size of the image
-            placeholder = np.zeros((config.IMAGE_SIZE, config.IMAGE_SIZE), dtype=bool)
+            placeholder = np.zeros(config.IMAGE_SHAPE[:2], dtype=bool)
             # GT box
             gt_y1, gt_x1, gt_y2, gt_x2 = gt_boxes[gt_id]
             gt_w = gt_x2 - gt_x1
@@ -430,7 +430,7 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
                 continue
 
             # RPN Targets
-            rpn_match, rpn_bbox = build_rpn_targets(anchors, gt_class_ids, gt_boxes / config.IMAGE_SIZE, config)
+            rpn_match, rpn_bbox = build_rpn_targets(anchors, gt_class_ids, gt_boxes, config)
 
             # Init batch arrays
             if b == 0:

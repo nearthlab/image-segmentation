@@ -108,16 +108,24 @@ class Trainer:
 
 
     def get_data_generator(self, dataset_dir, tag, subset):
-        from data_generators import CocoDataset
-        if self.model_config.MODEL == 'maskrcnn':
-            from data_generators.instance import data_generator
-        else:
-            from data_generators.semantic import data_generator
 
-        dataset = CocoDataset()
-        print('Loading COCO Datset: {} (version tag: {} / subset: {})'.format(dataset_dir, tag, subset))
-        dataset.load_coco(dataset_dir, tag=tag, subset=subset)
-        dataset.prepare()
+        if self.model_config.MODEL == 'maskrcnn':
+            from data_generators.coco import data_generator, CocoDataset
+
+            dataset = CocoDataset()
+            print('Loading COCO Dataset: {} (version tag: {} / subset: {})'.format(dataset_dir, tag, subset))
+            dataset.load_coco(dataset_dir, tag=tag, subset=subset)
+            dataset.prepare()
+        else:
+            from data_generators.kitti import data_generator, KittiDataset
+
+            dataset = KittiDataset()
+            print('Loading KITTI Dataset: {} (subset: {})'.format(dataset_dir, subset))
+            dataset.load_kitti(dataset_dir, subset)
+            if self.stage == 0:
+                print('Checking sanity of the dataset...')
+                dataset.check_sanity()
+
         print('num_images: {} / num_classes: {}'.format(dataset.num_images, dataset.num_classes))
         assert dataset.num_classes == self.model_config.NUM_CLASSES, 'NUM_CLASSES in model and dataset mismatched.'
         return data_generator(dataset, self.model_config, shuffle=True, batch_size=self.model_config.BATCH_SIZE)

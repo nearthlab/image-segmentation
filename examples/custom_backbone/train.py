@@ -7,13 +7,14 @@ from keras_model_wrapper import Trainer
 from config import load_config
 
 # Import your custom backbone
-from matterport_resnet import ResNet50, preprocess_input
+from matterport_resnet import ResNet50, ResNet101, preprocess_input
 
 # You can add or override existing backbone model
 # and corresponding preprocessing function as follows:
 from classification_models import Classifiers
 Classifiers._models.update({
     'resnet50': [ResNet50, preprocess_input],
+    'resnet101': [ResNet101, preprocess_input],
 })
 
 ############################################################
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--tag', required=False,
                         default='2017',
                         metavar='<tag>',
-                        help='Tag of the MS-COCO dataset (v1 or v2) (default=v1)')
+                        help='Tag of the MS-COCO dataset (default=2017)')
     parser.add_argument('-w', '--weights', required=False,
                         default=None,
                         metavar='/path/to/weights.h5',
