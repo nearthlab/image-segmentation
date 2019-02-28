@@ -26,12 +26,13 @@
 # THE SOFTWARE.
 
 import logging
+import threading
 import numpy as np
 
 from data_generators.utils import resize, resize_image, resize_mask, \
-    minimize_mask, compose_image_meta, mold_image, extract_bboxes
-from mask_rcnn.utils import compute_iou, box_refinement,\
-    compute_overlaps, get_anchors
+    minimize_mask, compose_image_meta, mold_image
+from mask_rcnn.utils import compute_iou, box_refinement, \
+    compute_overlaps, get_anchors, extract_bboxes, norm_boxes
 
 
 ############################################################
@@ -75,6 +76,7 @@ def load_image_gt(dataset, config, image_id, use_mini_mask=False):
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
     bbox = extract_bboxes(mask)
+    bbox = norm_boxes(bbox, mask.shape)
 
     # Active classes
     # Different datasets have different classes, so track the
@@ -406,79 +408,81 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
     # Anchors
     # [anchor_count, (y1, x1, y2, x2)]
     anchors = get_anchors(config)
+    lock = threading.Lock()
 
     # Keras requires a generator to run indefinitely.
     while True:
         try:
-            # Increment index to pick next image. Shuffle if at the start of an epoch.
-            image_index = (image_index + 1) % len(image_ids)
-            if shuffle and image_index == 0:
-                np.random.shuffle(image_ids)
+            with lock:
+                # Increment index to pick next image. Shuffle if at the start of an epoch.
+                image_index = (image_index + 1) % len(image_ids)
+                if shuffle and image_index == 0:
+                    np.random.shuffle(image_ids)
 
-            # Get GT bounding boxes and masks for image.
-            image_id = image_ids[image_index]
+                # Get GT bounding boxes and masks for image.
+                image_id = image_ids[image_index]
 
-            image, image_meta, gt_class_ids, gt_boxes, gt_masks = \
-                load_image_gt(dataset, config, image_id,
-                              use_mini_mask=config.USE_MINI_MASK)
+                image, image_meta, gt_class_ids, gt_boxes, gt_masks = \
+                    load_image_gt(dataset, config, image_id,
+                                  use_mini_mask=config.USE_MINI_MASK)
 
 
-            # Skip images that have no instances. This can happen in cases
-            # where we train on a subset of classes and the image doesn't
-            # have any of the classes we care about.
-            if not np.any(gt_class_ids > 0):
-                continue
+                # Skip images that have no instances. This can happen in cases
+                # where we train on a subset of classes and the image doesn't
+                # have any of the classes we care about.
+                if not np.any(gt_class_ids > 0):
+                    continue
 
-            # RPN Targets
-            rpn_match, rpn_bbox = build_rpn_targets(anchors, gt_class_ids, gt_boxes, config)
+                # RPN Targets
+                rpn_match, rpn_bbox = build_rpn_targets(anchors, gt_class_ids, gt_boxes, config)
 
-            # Init batch arrays
-            if b == 0:
-                batch_image_meta = np.zeros(
-                    (batch_size,) + image_meta.shape, dtype=image_meta.dtype)
-                batch_rpn_match = np.zeros(
-                    [batch_size, anchors.shape[0], 1], dtype=rpn_match.dtype)
-                batch_rpn_bbox = np.zeros(
-                    [batch_size, config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4], dtype=rpn_bbox.dtype)
-                batch_images = np.zeros(
-                    (batch_size,) + image.shape, dtype=np.float32)
-                batch_gt_class_ids = np.zeros(
-                    (batch_size, config.MAX_GT_INSTANCES), dtype=np.int32)
-                batch_gt_boxes = np.zeros(
-                    (batch_size, config.MAX_GT_INSTANCES, 4), dtype=np.int32)
-                batch_gt_masks = np.zeros(
-                    (batch_size, gt_masks.shape[0], gt_masks.shape[1],
-                     config.MAX_GT_INSTANCES), dtype=gt_masks.dtype)
+                # Init batch arrays
+                if b == 0:
+                    batch_image_meta = np.zeros(
+                        (batch_size,) + image_meta.shape, dtype=image_meta.dtype)
+                    batch_rpn_match = np.zeros(
+                        [batch_size, anchors.shape[0], 1], dtype=rpn_match.dtype)
+                    batch_rpn_bbox = np.zeros(
+                        [batch_size, config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4], dtype=rpn_bbox.dtype)
+                    batch_images = np.zeros(
+                        (batch_size,) + image.shape, dtype=np.float32)
+                    batch_gt_class_ids = np.zeros(
+                        (batch_size, config.MAX_GT_INSTANCES), dtype=np.int32)
+                    batch_gt_boxes = np.zeros(
+                        (batch_size, config.MAX_GT_INSTANCES, 4), dtype=np.int32)
+                    batch_gt_masks = np.zeros(
+                        (batch_size, gt_masks.shape[0], gt_masks.shape[1],
+                         config.MAX_GT_INSTANCES), dtype=gt_masks.dtype)
 
-            # If more instances than fits in the array, sub-sample from them.
-            if gt_boxes.shape[0] > config.MAX_GT_INSTANCES:
-                ids = np.random.choice(
-                    np.arange(gt_boxes.shape[0]), config.MAX_GT_INSTANCES, replace=False)
-                gt_class_ids = gt_class_ids[ids]
-                gt_boxes = gt_boxes[ids]
-                gt_masks = gt_masks[:, :, ids]
+                # If more instances than fits in the array, sub-sample from them.
+                if gt_boxes.shape[0] > config.MAX_GT_INSTANCES:
+                    ids = np.random.choice(
+                        np.arange(gt_boxes.shape[0]), config.MAX_GT_INSTANCES, replace=False)
+                    gt_class_ids = gt_class_ids[ids]
+                    gt_boxes = gt_boxes[ids]
+                    gt_masks = gt_masks[:, :, ids]
 
-            # Add to batch
-            batch_image_meta[b] = image_meta
-            batch_rpn_match[b] = rpn_match[:, np.newaxis]
-            batch_rpn_bbox[b] = rpn_bbox
-            batch_images[b] = mold_image(image.astype(np.float32), config.BACKBONE)
-            batch_gt_class_ids[b, :gt_class_ids.shape[0]] = gt_class_ids
-            batch_gt_boxes[b, :gt_boxes.shape[0]] = gt_boxes
-            batch_gt_masks[b, :, :, :gt_masks.shape[-1]] = gt_masks
+                # Add to batch
+                batch_image_meta[b] = image_meta
+                batch_rpn_match[b] = rpn_match[:, np.newaxis]
+                batch_rpn_bbox[b] = rpn_bbox
+                batch_images[b] = mold_image(image.astype(np.float32), config.BACKBONE)
+                batch_gt_class_ids[b, :gt_class_ids.shape[0]] = gt_class_ids
+                batch_gt_boxes[b, :gt_boxes.shape[0]] = gt_boxes
+                batch_gt_masks[b, :, :, :gt_masks.shape[-1]] = gt_masks
 
-            b += 1
+                b += 1
 
-            # Batch full?
-            if b >= batch_size:
-                inputs = [batch_images, batch_image_meta, batch_rpn_match, batch_rpn_bbox,
-                          batch_gt_class_ids, batch_gt_boxes, batch_gt_masks]
-                outputs = []
+                # Batch full?
+                if b >= batch_size:
+                    inputs = [batch_images, batch_image_meta, batch_rpn_match, batch_rpn_bbox,
+                              batch_gt_class_ids, batch_gt_boxes, batch_gt_masks]
+                    outputs = []
 
-                yield inputs, outputs
+                    yield inputs, outputs
 
-                # start a new batch
-                b = 0
+                    # start a new batch
+                    b = 0
         except (GeneratorExit, KeyboardInterrupt):
             raise
         except:

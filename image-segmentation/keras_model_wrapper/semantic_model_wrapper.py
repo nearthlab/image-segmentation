@@ -5,7 +5,7 @@ import tensorflow as tf
 import keras.backend as K
 from keras.models import Model
 from keras.layers import Lambda, Input
-from keras.losses import binary_crossentropy
+from keras.losses import categorical_crossentropy
 
 from keras_model_wrapper import KerasModelWrapper
 
@@ -17,8 +17,8 @@ from segmentation_models.losses import jaccard_loss as jaccard_loss_graph
 from segmentation_models.losses import dice_loss as dice_loss_graph
 
 
-def bce_loss_graph(gt, pr):
-    return K.mean(binary_crossentropy(gt, pr))
+def cce_loss_graph(gt, pr):
+    return K.mean(categorical_crossentropy(gt, pr))
 
 ############################################################
 #  Semantic Segmentation Model Class
@@ -79,7 +79,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
 
                 output_mask = base_model.output
 
-            bce_loss = Lambda(lambda x: bce_loss_graph(*x), name='bce_loss') \
+            cce_loss = Lambda(lambda x: cce_loss_graph(*x), name='cce_loss') \
                 ([input_gt_masks, output_mask])
 
             jaccard_loss = Lambda(lambda x: jaccard_loss_graph(*x), name='jaccard_loss') \
@@ -91,7 +91,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
             inputs = base_model.inputs
             inputs += [input_gt_masks]
             outputs = base_model.outputs
-            outputs += [bce_loss, jaccard_loss, dice_loss]
+            outputs += [cce_loss, jaccard_loss, dice_loss]
             model = Model(inputs, outputs, name=name)
 
             return model
@@ -117,7 +117,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
         num_channels = res.shape[-1]
         final_result = np.zeros((height, width, num_channels))
         for i in range(num_channels):
-            resized_mask = unresize_image(res[:, :, i], window, scale)
+            resized_mask = unresize_image(res[:, :, i], window, (height, width))
             resized_mask[resized_mask > threshold] = 1.0
             resized_mask[resized_mask <= threshold] = 0.0
             final_result[:, :, i] = resized_mask

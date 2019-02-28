@@ -70,15 +70,18 @@ if __name__ == '__main__':
                 if args.weights.lower() == 'last':
                     # Find the last trained weights
                     model_path = trainer.find_last()
+                    trainer.set_log_dir(model_path, inherit_epoch=True)
                 elif args.weights.lower() == 'best':
                     model_path = trainer.find_last(by_val_loss=True)
+                    trainer.set_log_dir(model_path, inherit_epoch=True)
                 else:
                     model_path = args.weights
+                    trainer.set_log_dir(model_path)
 
                 # Load weights
                 print('Loading weights', model_path)
                 model_wrapper.load_weights(model_path)
-                trainer.set_log_dir(model_path)
+
             else:
                 trainer.set_log_dir()
                 print('No weights provided. Will use randomly initialized weights')

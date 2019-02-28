@@ -26,6 +26,7 @@
 # THE SOFTWARE.
 
 import warnings
+import threading
 import numpy as np
 import scipy
 import skimage
@@ -112,10 +113,10 @@ def resize_image(image, shape):
     return image.astype(image_dtype), window, scale, padding
 
 
-def unresize_image(image, window, scale):
+def unresize_image(image, window, shape):
     cropped_image = image[window[0]:window[2]+1, window[1]:window[3]+1, :] if image.ndim == 3 else image[window[0]:window[2]+1, window[1]:window[3]+1]
-    h, w = window[2] - window[0], window[3] - window[1]
-    return resize(cropped_image, (round(h / scale), round(w / scale)), preserve_range=True)
+    #h, w = window[2] - window[0], window[3] - window[1]
+    return resize(cropped_image, shape, preserve_range=True)
 
 
 # This is for preventing loss explosion when training maskrcnn with a VGG backbone model
@@ -288,29 +289,3 @@ def parse_image_meta_graph(meta):
         'scale': scale,
         'active_class_ids': active_class_ids,
     }
-
-
-def extract_bboxes(mask):
-    '''Compute bounding boxes from masks.
-    mask: [height, width, num_instances]. Mask pixels are either 1 or 0.
-
-    Returns: bbox array [num_instances, (y1, x1, y2, x2)].
-    '''
-    boxes = np.zeros([mask.shape[-1], 4], dtype=np.float32)
-    for i in range(mask.shape[-1]):
-        m = mask[:, :, i]
-        # Bounding box.
-        horizontal_indicies = np.where(np.any(m, axis=0))[0]
-        vertical_indicies = np.where(np.any(m, axis=1))[0]
-        if horizontal_indicies.shape[0]:
-            x1, x2 = horizontal_indicies[[0, -1]]
-            y1, y2 = vertical_indicies[[0, -1]]
-            # x2 and y2 should not be part of the box. Increment by 1.
-            x2 += 1
-            y2 += 1
-        else:
-            # No mask for this instance. Might happen due to
-            # resizing or cropping. Set bbox to zeros
-            x1, x2, y1, y2 = 0, 0, 0, 0
-        boxes[i] = np.array([y1 / mask.shape[0], x1 / mask.shape[1], y2 / mask.shape[0], x2 / mask.shape[1]])
-    return boxes.astype(np.float32)

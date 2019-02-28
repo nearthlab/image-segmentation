@@ -26,6 +26,7 @@
 # THE SOFTWARE.
 
 import logging
+import threading
 import numpy as np
 
 from data_generators.utils import resize_image, resize_mask, minimize_mask
@@ -80,42 +81,43 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
     error_count = 0
 
     preprocess_input = Classifiers.get_preprocessing(config.BACKBONE)
-
+    lock = threading.Lock()
     # Keras requires a generator to run indefinitely.
     while True:
         try:
-            # Increment index to pick next image. Shuffle if at the start of an epoch.
-            image_index = (image_index + 1) % len(image_ids)
-            if shuffle and image_index == 0:
-                np.random.shuffle(image_ids)
+            with lock:
+                # Increment index to pick next image. Shuffle if at the start of an epoch.
+                image_index = (image_index + 1) % len(image_ids)
+                if shuffle and image_index == 0:
+                    np.random.shuffle(image_ids)
 
-            # Get GT bounding boxes and masks for image.
-            image_id = image_ids[image_index]
-            image, gt_mask = load_image_gt(dataset, image_id, config.IMAGE_SHAPE, config.USE_MINI_MASK, config.MINI_MASK_SHAPE)
+                # Get GT bounding boxes and masks for image.
+                image_id = image_ids[image_index]
+                image, gt_mask = load_image_gt(dataset, image_id, config.IMAGE_SHAPE, config.USE_MINI_MASK, config.MINI_MASK_SHAPE)
 
-            # Init batch arrays
-            if b == 0:
-                batch_images = np.zeros(
-                    (batch_size,) + image.shape, dtype=np.float32)
-                batch_gt_mask = np.zeros(
-                    (batch_size, gt_mask.shape[0], gt_mask.shape[1],
-                     config.NUM_CLASSES - 1), dtype=gt_mask.dtype)
+                # Init batch arrays
+                if b == 0:
+                    batch_images = np.zeros(
+                        (batch_size,) + image.shape, dtype=np.float32)
+                    batch_gt_mask = np.zeros(
+                        (batch_size, gt_mask.shape[0], gt_mask.shape[1],
+                         config.NUM_CLASSES - 1), dtype=gt_mask.dtype)
 
-            # Add to batch
-            batch_images[b] = preprocess_input(image.astype(np.float32))
-            batch_gt_mask[b, :, :, :] = gt_mask
+                # Add to batch
+                batch_images[b] = preprocess_input(image.astype(np.float32))
+                batch_gt_mask[b, :, :, :] = gt_mask
 
-            b += 1
+                b += 1
 
-            # Batch full?
-            if b >= batch_size:
-                inputs = [batch_images, batch_gt_mask]
-                outputs = []
+                # Batch full?
+                if b >= batch_size:
+                    inputs = [batch_images, batch_gt_mask]
+                    outputs = []
 
-                yield inputs, outputs
+                    yield inputs, outputs
 
-                # start a new batch
-                b = 0
+                    # start a new batch
+                    b = 0
 
         except (GeneratorExit, KeyboardInterrupt):
             raise

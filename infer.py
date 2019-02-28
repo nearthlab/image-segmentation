@@ -6,7 +6,7 @@ from visual_tools import GuiInferenceViewer
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description='Run Mask R-CNN detector.')
+        description='Run inference and visualize the result.')
 
     parser.add_argument('-c', '--model_cfg', required=True,
                         metavar='/path/to/model.cfg',

@@ -2,20 +2,16 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 
-from data_generators.coco import CocoDataset
-from visual_tools import GuiCocoViewer
+from data_generators.kitti import KittiDataset
+from visual_tools import GuiKittiViewer
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Inspect COCO dataset.')
     parser.add_argument('-d', '--dataset', required=True,
-                        metavar='/path/to/coco/',
-                        help='Directory of the MS-COCO dataset')
-    parser.add_argument('--tag', required=False,
-                        default='2017',
-                        metavar='<tag>',
-                        help='Tag of the MS-COCO dataset (default=2017)')
+                        metavar='/path/to/KITTI/',
+                        help='Directory of the KITTI dataset')
     parser.add_argument('--subset', required=False,
                         default='train',
                         metavar="<subset>",
@@ -29,16 +25,16 @@ if __name__ == '__main__':
         'The argument for --subset option must be either \'train\' or \'val\' but {} is given.'.format(args.subset)
 
     # Load dataset
-    dataset = CocoDataset()
+    dataset = KittiDataset()
     print('Loading subset: {} ...'.format(args.subset))
-    dataset.load_coco(args.dataset, args.subset, tag=args.tag)
-    dataset.prepare()
+    dataset.load_kitti(args.dataset, args.subset)
+    dataset.check_sanity()
 
     print("Image Count: {}".format(dataset.num_images))
     print("Class Count: {}".format(dataset.num_classes))
-    for i, info in enumerate(dataset.class_info):
-        print("{:3}. {:50}".format(i, info['name']))
+    for i, name in enumerate(dataset.class_names):
+        print("{:3}. {:50}".format(i, name))
 
-    viewer = GuiCocoViewer(
+    viewer = GuiKittiViewer(
         win_titles[args.subset], dataset)
     plt.show()

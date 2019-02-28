@@ -45,13 +45,11 @@ class GuiInferenceViewer(GuiViewer):
             print("\ttime taken: {}".format(time_taken))
 
             if self.model.config.MODEL == 'maskrcnn':
-
                 display_instances(image=img, boxes=det['rois'],
                                   masks=det['masks'], class_ids=det['class_ids'],
                                   scores=det['scores'], title=image_file,
                                   class_names=self.class_names, ax=self.ax)
             else:
-
                 display_segmentation(image=img, masks=det, class_names=self.class_names, ax=self.ax)
 
             title = "ID: {}\nImage file name: {}".format(
