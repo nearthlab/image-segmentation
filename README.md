@@ -51,7 +51,7 @@ This repository includes:
 
 # How to train your own model
 
-  i. Download the sample dataset from [release page](https://github.com/nearthlab/image-segmentation/releases) andplace it under datasets folder.
+  i. Download the modified KITTI dataset from [release page](https://github.com/nearthlab/image-segmentation/releases) and place it under datasets folder. [Note that the KITTI dataset is public and available [online](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015). I simply splitted the dataset into training and validation dataset and simplified the labels.]
 
   ii. Choose your model and copy corresponding cfg files from examples/configs. For example, if you want to train a Unet model with resnet18 backbone,
 ```bash
@@ -67,7 +67,7 @@ This repository includes:
   iv. Run the training script
 ```bash
   cd cd /path/to/image-segmentation
-  python python train.py -s unet_resnet18 -d datasets/sample_dataset --tag v2 -m unet_resnet18/unet.cfg -t unet_resnet18/train_unet_decoder.cfg unet_resnet18/train_unet_all.cfg
+  python python train.py -s unet_resnet18 -d datasets/KITTI -m unet_resnet18/unet.cfg -t unet_resnet18/train_unet_decoder.cfg unet_resnet18/train_unet_all.cfg
 ```
   This script will train the unet model in two stages with training information in unet_resnet18/train_unet_decoder.cfg followed by unet_resnet18/train_unet_all.cfg. The idea is:
   we first train the decoder part only while freezing the backbone with imagenet-pretrained weights loaded,
