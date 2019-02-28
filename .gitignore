@@ -3,6 +3,7 @@
 **/*.pyc
 datasets/*/
 playground.py
+examples/coco_converter
 plans/*/
 assets/*/
 assets/*.tar.gz
