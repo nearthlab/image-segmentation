@@ -37,8 +37,8 @@ This repository includes:
   Note that working on a virtual environment is highly recommended. But if you insist on not using it, you can still do so:
 ```bash
   git clone https://github.com/nearthlab/image-segmentation
-  cd image-segmentation 
-  pip install -r requirements.txt
+  cd image-segmentation
+  pip install --user -r requirements.txt
 ```
 
 **Requirements**<br/>

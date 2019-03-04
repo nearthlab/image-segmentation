@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import datetime
 import multiprocessing
 import tensorflow as tf
@@ -42,7 +43,7 @@ def get_optimizer(config):
 
 class Trainer:
 
-    def __init__(self, model_wrapper, train_config, workspace, stage = 0):
+    def __init__(self, model_wrapper, train_config, workspace, stage=0, check_sanity=False):
         assert model_wrapper.config.MODE == 'training', 'Create model in training mode.'
         self.branched_train_config = train_config
         self.train_config = train_config.flatten()
@@ -57,6 +58,7 @@ class Trainer:
         self.name = self.keras_model.inner_model.name if self.keras_model.__class__.__name__ == 'ParallelModel' \
             else self.keras_model.name
         self.stage = stage
+        self.check_sanity = check_sanity
 
 
     def compile(self):
@@ -122,12 +124,18 @@ class Trainer:
             dataset = KittiDataset()
             print('Loading KITTI Dataset: {} (subset: {})'.format(dataset_dir, subset))
             dataset.load_kitti(dataset_dir, subset)
-            if self.stage == 0:
+            if self.stage == 0 and self.check_sanity:
                 print('Checking sanity of the dataset...')
                 dataset.check_sanity()
 
         print('num_images: {} / num_classes: {}'.format(dataset.num_images, dataset.num_classes))
         assert dataset.num_classes == self.model_config.NUM_CLASSES, 'NUM_CLASSES in model and dataset mismatched.'
+
+        if self.stage == 0:
+            fp = open(os.path.join(self.log_dir, '..', 'class.json'), 'w')
+            json.dump(dataset.class_names, fp)
+            fp.close()
+
         return data_generator(dataset, self.model_config, shuffle=True, batch_size=self.model_config.BATCH_SIZE)
 
 

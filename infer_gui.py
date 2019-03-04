@@ -5,33 +5,20 @@ import matplotlib.pyplot as plt
 
 from visual_tools import GuiInferenceViewer
 
-# Import your custom backbone
-from matterport_resnet import ResNet50, ResNet101, preprocess_input
-
-# You can add or override existing backbone model
-# and corresponding preprocessing function as follows:
-from classification_models import Classifiers
-Classifiers._models.update({
-    'resnet50': [ResNet50, preprocess_input],
-    'resnet101': [ResNet101, preprocess_input],
-})
-
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description='Run Mask R-CNN detector.')
+        description='Run inference and visualize the result.')
 
-    parser.add_argument('-c', '--model_cfg', required=False,
-                        default='MaskRCNN_coco.cfg',
-                        metavar='/path/to/MaskRCNN_coco.cfg',
-                        help='Path to MaskRCNN_coco.cfg file')
-    parser.add_argument('-i', '--image_dir', required=False,
-                        default='images',
+    parser.add_argument('-c', '--model_cfg', required=True,
+                        metavar='/path/to/model.cfg',
+                        help='Path to model.cfg file')
+    parser.add_argument('-i', '--image_dir', required=True,
                         metavar='/path/to/directory',
                         help='Path to a directory containing images')
     parser.add_argument('-w', '--weights', required=False,
-                        default='MaskRCNN_coco.h5',
-                        metavar='/path/to/MaskRCNN_coco.h5',
+                        default=None,
+                        metavar='/path/to/weights.h5',
                         help='Path to maskrcnn weights.h5 file')
     parser.add_argument('-t', '--threshold', required=False,
                         type=float,
@@ -40,7 +27,7 @@ if __name__ == '__main__':
                         help='Must be between 0 and 1.')
     parser.add_argument('-l', '--label', required=False,
                         type=str,
-                        default='coco_label.json',
+                        default='label.json',
                         metavar='/path/to/label.json',
                         help='Path to label json file')
     args = parser.parse_args()
@@ -51,11 +38,10 @@ if __name__ == '__main__':
     if args.label is not None:
         assert os.path.exists(args.label)
         fp = open(args.label, 'r')
-        json_content = json.load(fp)
-        coco_label = {int(key): json_content[key] for key in json_content}
+        label = json.load(fp)
         fp.close()
     else:
-        coco_label = None
+        label = None
 
-    viewer = GuiInferenceViewer(args.image_dir, args.model_cfg, args.weights, args.threshold, coco_label)
+    viewer = GuiInferenceViewer(args.image_dir, args.model_cfg, args.weights, args.threshold, label)
     plt.show()

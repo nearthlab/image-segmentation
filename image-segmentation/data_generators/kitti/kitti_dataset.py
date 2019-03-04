@@ -110,8 +110,8 @@ class KittiDataset:
         assert os.path.exists(self.image_dir), 'No such directory: {}'.format(self.image_dir)
         assert os.path.exists(self.label_dir), 'No such directory: {}'.format(self.label_dir)
 
-        self.image_files = sorted([x for x in os.listdir(self.image_dir) if x.endswith('.png')])
-        self.label_files = sorted([x for x in os.listdir(self.label_dir) if x.endswith('.png')])
+        self.image_files = sorted([x for x in os.listdir(self.image_dir) if x.lower().endswith('.png') or x.lower().endswith('.jpg')])
+        self.label_files = sorted([x for x in os.listdir(self.label_dir) if x.lower().endswith('.png')])
 
         assert len(self.image_files) == len(self.label_files), \
             'image - label size mismatch! There are {} image files and {} label files'.format(len(self.image_files), len(self.label_files))

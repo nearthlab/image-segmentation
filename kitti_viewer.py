@@ -16,6 +16,11 @@ if __name__ == '__main__':
                         default='train',
                         metavar="<subset>",
                         help='Either train or val')
+    parser.add_argument('--check_sanity', required=False,
+                        default=False,
+                        type=bool,
+                        metavar='<check-sanity>',
+                        help='Whether to check sanity of the dataset or not')
     args = parser.parse_args()
 
     dataset_name = os.path.basename(args.dataset)
@@ -28,7 +33,9 @@ if __name__ == '__main__':
     dataset = KittiDataset()
     print('Loading subset: {} ...'.format(args.subset))
     dataset.load_kitti(args.dataset, args.subset)
-    dataset.check_sanity()
+    if args.check_sanity:
+        print('Checking sanity of the dataset...')
+        dataset.check_sanity()
 
     print("Image Count: {}".format(dataset.num_images))
     print("Class Count: {}".format(dataset.num_classes))
