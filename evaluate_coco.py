@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-w', '--weights', required=True,
                         metavar='/path/to/weights.h5',
-                        help='Path to maskrcnn weights.h5 file')
+                        help='Path to weights.h5 file')
     parser.add_argument('-c', '--model_cfg', required=True,
                         metavar='/path/to/model.cfg',
                         help='Path to model.cfg file')

@@ -33,6 +33,11 @@ This repository includes:
   
 ```
 
+![alt text](assets/unet.gif)
+![alt text](assets/kitti0.png)
+![alt text](assets/kitti1.png)
+![alt text](assets/coco0.png)
+
 # Installation
 
 **i. How to set up a virtual environment and install on it**<br/>

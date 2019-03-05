@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--weights', required=False,
                         default=None,
                         metavar='/path/to/weights.h5',
-                        help='Path to maskrcnn weights.h5 file')
+                        help='Path to weights.h5 file')
     parser.add_argument('-t', '--threshold', required=False,
                         type=float,
                         default=0.5,
