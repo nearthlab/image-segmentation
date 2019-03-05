@@ -17,7 +17,7 @@ if __name__ == '__main__':
                         metavar="<subset>",
                         help='Either train or val')
     parser.add_argument('--tag', required=False,
-                        default='2017',
+                        default='simple',
                         metavar='<tag>',
                         help='Tag of the KITTI dataset (default=simple)')
     parser.add_argument('--check_sanity', required=False,

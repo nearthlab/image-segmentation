@@ -1,13 +1,36 @@
 # image-segmentation
 
 This repository includes:
-  * A re-implementation of [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) with **multiple backbone support** using the implementations of various backbone models in [qubvel/classification_models](https://github.com/qubvel/classification_models). (See [here](https://github.com/qubvel/classification_models#architectures) for available backbone architectures)
-  * **Unified training, inference and evaluation** codes for Mask R-CNN and some semantic segmentation models (from [qubvel/segmentation_models](https://github.com/qubvel/segmentation_models)), for which you can **easily modify various parameters** with simple configuration files.
-  * Coco dataset viewer
+  * A re-implementation of [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) with **multiple backbone support (with imagenet pretrained weights)** using the implementations of various backbone models in [qubvel/classification_models](https://github.com/qubvel/classification_models). (See [here](https://github.com/qubvel/classification_models#architectures) for available backbone architectures)
+  * **Unified training, inference and evaluation** codes for Mask R-CNN and some semantic segmentation models (from [qubvel/segmentation_models](https://github.com/qubvel/segmentation_models)), for which you can **easily modify various parameters** with **simple configuration file interface**.
+  * COCO dataset and KITTI (or Cityscapes) dataset viewers
 ```
   [Available segmentation models]
-  Instance: maskrcnn
-  Semantic: fpn, linknet, pspnet, unet
+  Instance:
+    'maskrcnn'
+  Semantic:
+    'fpn', 'linknet', 'pspnet', 'unet'
+  
+  [Available backbone architectures]
+  MobileNet:
+    'mobilenetv2', 'mobilenet' 
+  DenseNet:
+    'densenet121', 'densenet169', 'densenet201'  
+  ResNet:
+    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'
+  ResNext:
+    'resnext50', 'resnext101'
+  SE-Net:
+    'seresnet18', 'seresnet34', 'seresnet50', 'seresnet101', 'seresnet152', 'seresnext50', 'seresnext101', 'senet154'
+  Resnet V2:
+    'resnet50v2', 'resnet101v2', 'resnet152v2'   
+  Inception:
+    'inceptionv3', 'inceptionresnetv2', 'xception'
+  NASNet:
+    'nasnetmobile', 'nasnetlarge'
+  VGG:
+    'vgg16', 'vgg19'
+  
 ```
 
 # Installation
@@ -15,8 +38,6 @@ This repository includes:
 **i. How to set up a virtual environment and install on it**<br/>
 ```bash
   sudo apt-get install virtualenv
-  mkdir works
-  cd works
   virtualenv -p python3 venv
   git clone https://github.com/nearthlab/image-segmentation
   cd image-segmentation
@@ -28,9 +49,9 @@ This repository includes:
 ```bash
   cd /path/to/image-segmentation
   source activate
-  # this is equivalent to: 
+  # the second line is equivalent to: 
   # source ../venv/bin/activate && export PYTHONPATH=`pwd`/image-segmentation
-  # i.e. activating the virtual environment and add the image-segmentation folder to the PYTHONPATH
+  # i.e. activating the virtual environment and add the image-segmentation/image-segmentation folder to the PYTHONPATH
 ```
   
 **ii. How to install without a virtual environment**<br/>
@@ -49,29 +70,97 @@ This repository includes:
     4. keras-applications>=1.0.7 
     5. tensorflow(-gpu)==1.10.0 (tested)
 
-# How to train your own model
 
-  i. Download the modified KITTI dataset from [release page](https://github.com/nearthlab/image-segmentation/releases) and place it under datasets folder. [Note that the KITTI dataset is public and available [online](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015). I simply splitted the dataset into training and validation dataset and simplified the labels.]
+# How to run examples
+Please read the instruction written in READ.md files in each example folder
+1. [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) <br/>
+This example illustrates how to build MaskRCNN with your custom backbone CNN. In particular, I adopted [matterport's implementation of ResNet](https://github.com/matterport/Mask_RCNN/blob/1ad9feaae3d87b52495413e6c8ea0e92f0e5bc34/mrcnn/model.py#L171), which is slightly different from [qubvel's](https://github.com/qubvel/classification_models/blob/e223c492477030b80bdc56b53471df39c4e090ea/classification_models/resnet/builder.py#L24). Moreover, you can run the inference using the pretrained [MaskRCNN_coco.h5](https://github.com/nearthlab/image-segmentation/releases). (I slightly modified the 'mask_rcnn_coco.h5' in [matterport/Mask_RCNN/releases](https://github.com/matterport/Mask_RCNN/releases) to make this file due to some differences in layer names)
 
-  ii. Choose your model and copy corresponding cfg files from examples/configs. For example, if you want to train a Unet model with resnet18 backbone,
+2. [Imagenet Classification](https://github.com/nearthlab/image-segmentation/tree/master/examples/imagenet) <br/>
+This example shows the imagenet classification results for various backbone architectures.
+
+3. [Create KITTI Label](https://github.com/nearthlab/image-segmentation/tree/master/examples/create_kitti_label) <br/>
+This example is a code that I used to simplify some of the object class labels in KITTI dataset. (For instance, I merged the 5 separate classes 'car', 'truck', 'bus', 'caravan' and 'trailer' into one single class called 'vehicle')
+
+4. [Configurations](https://github.com/nearthlab/image-segmentation/tree/master/examples/configs) <br/>
+Some example cfg files that describes the segmentation models and training processes
+
+# How to train your own FPN / LinkNet / PSPNet / UNet model on KITTI dataset 
+
+  i. Download the modified KITTI dataset from [release page](https://github.com/nearthlab/image-segmentation/releases)
+  (or make your own dataset into the same format) and place it under [datasets](https://github.com/nearthlab/image-segmentation/tree/master/datasets) folder. [Note that the KITTI dataset is a public dataset available [online](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015).
+  I simply splitted the dataset into training and validation sets and simplified the labels using [create_kitti_label.py](https://github.com/nearthlab/image-segmentation/blob/master/examples/create_kitti_label/create_kitti_label.py).]
+  
+  * Note that KITTI dataset is a very small dataset containing only 180 training images and 20 validation images. If you want to train a model for a serious purpose, you should consider using much more larger dataset. 
+
+  ii. Choose your model and copy corresponding cfg files from examples/configs. For example, if you want to train a Unet model,
 ```bash
   cd /path/to/image-segmentation
-  mkdir unet_resnet18
-  cp examples/configs/unet/*.cfg unet_resnet18
+  mkdir -p plans/unet
+  cp examples/configs/unet/*.cfg plans/unet
 ```
 
   iii. [Optional] Tune some model and training parameters in the config files that you have just copied. Read the comments in the example config files for what each parameter does.
 [Note that you have to declare a variable in .cfg file in the format
 ```{type}-{VARIABLE_NAME} = {value}```]
 
-  iv. Run the training script
+  iv. Run the training command
 ```bash
   cd cd /path/to/image-segmentation
-  python python train.py -s unet_resnet18 -d datasets/KITTI -m unet_resnet18/unet.cfg -t unet_resnet18/train_unet_decoder.cfg unet_resnet18/train_unet_all.cfg
+  python train.py -s plans/unet -d datasets/KITTI \
+  -m plans/unet/unet.cfg \
+  -t plans/unet/train_unet_decoder.cfg plans/unet/train_unet_all.cfg
 ```
-  This script will train the unet model in two stages with training information in unet_resnet18/train_unet_decoder.cfg followed by unet_resnet18/train_unet_all.cfg. The idea is:
+  This script will train the unet model in two stages with training information in plans/unet/train_unet_decoder.cfg followed by plans/unet/train_unet_all.cfg. The idea is:
   we first train the decoder part only while freezing the backbone with imagenet-pretrained weights loaded,
   and then fine tune the entire model in the second stage. You can provide as many training cfg files as you wish, dividing training into multiple stages.
+  <br/><br/>
+  Once the training is done, you can find the three files: 'class_names.json', 'infer.cfg' and 'best_model.h5',
+  which you can use later for the [inference](https://github.com/nearthlab/image-segmentation/blob/master/README.md#how-to-visualize-inference)
+
+# How to train your own MaskRCNN model on COCO dataset
+
+  i. Download the COCO dataset. To do this, simply run:
+```bash
+  cd /path/to/image-segmentation/datasets
+  ./download_coco.sh
+```
   
-# 
+  ii. Copy the example cfg files from examples/configs/maskrcnn.
+```bash
+  cd /path/to/image-segmentation
+  mkdir -p plans/maskrcnn
+  cp examples/configs/maskrcnn/*.cfg plans/maskrcnn
+```
+
+  iii. [Optional] Tune some model and training parameters in the config files that you have just copied. Read the comments in the example config files for what each parameter does.
+[Note that you have to declare a variable in .cfg file in the format
+```{type}-{VARIABLE_NAME} = {value}```]
+
+
+  iv. Run the training command
+```bash
+  cd cd /path/to/image-segmentation
+  python train.py -s plans/maskrcnn -d datasets/coco \
+  -m plans/maskrcnn/maskrcnn.cfg \
+  -t plans/maskrcnn/train_maskrcnn_heads.cfg plans/maskrcnn/train_maskrcnn_stage3up.cfg plans/maskrcnn/train_maskrcnn_all.cfg
+```
+
+  This will train your MaskRCNN model in 3 stages (heads &rarr; stage3+ &rarr; all) as suggested in [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN/blob/1ad9feaae3d87b52495413e6c8ea0e92f0e5bc34/samples/coco/coco.py#L498))
+  Likewise, you can find the three files: 'class_names.json', 'infer.cfg' and 'best_model.h5',
+  which you can use later for the [inference](https://github.com/nearthlab/image-segmentation/blob/master/README.md#how-to-visualize-inference)
+  
+  
+# How to visualize inference
+
+You can visualize your model's inference in a pop-up window:
+```bash
+python infer_gui.py -c=/path/to/infer.cfg -w=/path/to/best_model.h5 -l=/path/to/class_names.json \
+-i=/path/to/a/directory/containing/image_files
+```
+or save the result as image files [This will create a directory named 'results' under the directory you provided in -i option, and write the viusalized inference images in it]:
+```bash
+python infer.py -c=/path/to/infer.cfg -w=/path/to/best_model.h5 -l=/path/to/class_names.json \
+-i=/path/to/a/directory/containing/image_files
+```
 

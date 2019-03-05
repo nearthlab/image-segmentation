@@ -32,6 +32,10 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dataset', required=True,
                         metavar='/path/to/coco/',
                         help='Directory of the MS-COCO dataset')
+    parser.add_argument('--tag', required=False,
+                        default='simple',
+                        metavar='<tag>',
+                        help='Tag of the KITTI dataset (default=simple)')
     parser.add_argument('-t', '--threshold', required=False,
                         type=float,
                         default=0.5,
@@ -43,7 +47,7 @@ if __name__ == '__main__':
     model.load_weights(args.weights)
 
     dataset = KittiDataset()
-    dataset.load_kitti(args.dataset, 'val')
+    dataset.load_kitti(args.dataset, 'val', args.tag)
 
     assert dataset.num_classes == model.config.NUM_CLASSES
 

@@ -43,7 +43,7 @@ if __name__ == '__main__':
                         metavar='/path/to/model.cfg',
                         help='Path to model.cfg file')
     parser.add_argument('-t', '--train_cfg', required=False,
-                        default=['configs/train_heads.cfg', 'configs/train_stage3up.cfg', 'configs/train_all.cfg'],
+                        default=['configs/train_heads.cfg', 'configs/train_stage4up.cfg', 'configs/train_all.cfg'],
                         nargs='+',
                         metavar='path/to/train.cfg',
                         help='Path to train.cfg file(s) [More than one can be provided]')

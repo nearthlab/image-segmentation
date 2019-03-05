@@ -1,0 +1,2 @@
+# mask_rcnn
+This is essentially a refactored (many functions are distributed into different files according to their jobs) & modified (to use with multiple backbones) version of the MaskRCNN implementation in [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN).
