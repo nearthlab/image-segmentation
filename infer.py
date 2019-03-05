@@ -32,7 +32,7 @@ if __name__ == '__main__':
                         help='Must be between 0 and 1.')
     parser.add_argument('-l', '--label', required=False,
                         type=str,
-                        default='label.json',
+                        default=None,
                         metavar='/path/to/label.json',
                         help='Path to label json file')
     args = parser.parse_args()

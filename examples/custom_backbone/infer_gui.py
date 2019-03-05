@@ -40,8 +40,8 @@ if __name__ == '__main__':
                         help='Must be between 0 and 1.')
     parser.add_argument('-l', '--label', required=False,
                         type=str,
-                        default='coco_class.json',
-                        metavar='/path/to/class.json',
+                        default='coco_class_names.json',
+                        metavar='/path/to/coco_class_names.json',
                         help='Path to class json file')
     args = parser.parse_args()
 

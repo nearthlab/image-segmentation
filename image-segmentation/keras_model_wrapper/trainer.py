@@ -109,21 +109,21 @@ class Trainer:
             self.keras_model.metrics_tensors.append(loss)
 
 
-    def get_data_generator(self, dataset_dir, tag, subset):
+    def get_data_generator(self, dataset_dir, subset, tag):
 
         if self.model_config.MODEL == 'maskrcnn':
             from data_generators.coco import data_generator, CocoDataset
 
             dataset = CocoDataset()
-            print('Loading COCO Dataset: {} (version tag: {} / subset: {})'.format(dataset_dir, tag, subset))
-            dataset.load_coco(dataset_dir, tag=tag, subset=subset)
+            print('Loading COCO Dataset: {} (subset: {} / version tag: {})'.format(dataset_dir, subset, tag))
+            dataset.load_coco(dataset_dir, subset, tag)
             dataset.prepare()
         else:
             from data_generators.kitti import data_generator, KittiDataset
 
             dataset = KittiDataset()
-            print('Loading KITTI Dataset: {} (subset: {})'.format(dataset_dir, subset))
-            dataset.load_kitti(dataset_dir, subset)
+            print('Loading KITTI Dataset: {} (subset: {} / version tag: {})'.format(dataset_dir, subset, tag))
+            dataset.load_kitti(dataset_dir, subset, tag)
             if self.stage == 0 and self.check_sanity:
                 print('Checking sanity of the dataset...')
                 dataset.check_sanity()
@@ -132,7 +132,7 @@ class Trainer:
         assert dataset.num_classes == self.model_config.NUM_CLASSES, 'NUM_CLASSES in model and dataset mismatched.'
 
         if self.stage == 0:
-            fp = open(os.path.join(self.log_dir, '..', 'class.json'), 'w')
+            fp = open(os.path.join(self.log_dir, '..', 'class_names.json'), 'w')
             json.dump(dataset.class_names, fp)
             fp.close()
 
@@ -145,50 +145,43 @@ class Trainer:
                         Returns:
                             The path of the last checkpoint file
                         '''
-        # Get directory names. Each directory corresponds to a model
-        dir_names = next(os.walk(self.workspace))[1]
-        dir_names = filter(lambda f: f.startswith(self.name), dir_names)
-        dir_names = sorted(dir_names)
-        if not dir_names:
-            import errno
-            raise FileNotFoundError(
-                errno.ENOENT,
-                'Could not find model directory under {}'.format(self.workspace))
 
-        # Pick last directory
-        dir_name = os.path.join(self.workspace, dir_names[-1])
+        def find_last_dir_name_starting_with(parent_dir, prefix):
+            dir_names = next(os.walk(parent_dir))[1]
+            dir_names = filter(lambda f: f.startswith(prefix), dir_names)
+            dir_names = sorted(dir_names)
+            if not dir_names:
+                import errno
+                raise FileNotFoundError(
+                    errno.ENOENT,
+                    'Could not find model directory under {}'.format(self.workspace))
+            return os.path.join(parent_dir, dir_names[-1])
 
-        dir_names = next(os.walk(dir_name))[1]
-        dir_names = filter(lambda f: f.startswith('stage'), dir_names)
-        dir_names = sorted(dir_names)
-        if not dir_names:
-            import errno
-            raise FileNotFoundError(
-                errno.ENOENT,
-                'Could not find model directory under {}'.format(self.workspace))
+        # Find the latest log directory
+        latest_log_dir = find_last_dir_name_starting_with(self.workspace, self.name)
 
-        # Pick the last stage directory
-        dir_name = os.path.join(dir_name, dir_names[-1])
+        # Find last stage directory
+        last_stage_dir = find_last_dir_name_starting_with(latest_log_dir, 'stage')
 
-        match = re.findall('stage(\d)', dir_name)
+        match = re.findall('stage(\d)', last_stage_dir)
         if match:
             self.stage = int(match[0])
 
         # Find the last checkpoint
-        checkpoints = next(os.walk(dir_name))[2]
+        checkpoints = next(os.walk(last_stage_dir))[2]
         checkpoints = sorted([x for x in checkpoints if x.endswith('.h5')])
 
         if not checkpoints:
             import errno
             raise FileNotFoundError(
-                errno.ENOENT, 'Could not find weight files in {}'.format(dir_name))
+                errno.ENOENT, 'Could not find weight files in {}'.format(last_stage_dir))
 
         if by_val_loss:
             checkpoints = sorted(checkpoints,
                                  key=lambda x: float(x[:-3].split(sep='_')[-1]),
                                  reverse=True)
 
-        checkpoint = os.path.join(dir_name, checkpoints[-1])
+        checkpoint = os.path.join(last_stage_dir, checkpoints[-1])
 
         return checkpoint
 
@@ -349,8 +342,8 @@ class Trainer:
             train_backbone = 'backbone' in self.train_config.TRAINABLE_LAYERS
 
         # Data generators
-        train_generator = self.get_data_generator(dataset_dir, tag, 'train')
-        val_generator = self.get_data_generator(dataset_dir, tag, 'val')
+        train_generator = self.get_data_generator(dataset_dir, 'train', tag)
+        val_generator = self.get_data_generator(dataset_dir, 'val', tag)
 
         if hasattr(train_generator, 'class_names') and hasattr(val_generator, 'class_names'):
             assert train_generator.class_names == val_generator.class_names

@@ -17,12 +17,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Train Mask R-CNN on Unreal COCO.')
     parser.add_argument('-d', '--dataset', required=True,
-                        metavar='/path/to/coco/',
-                        help='Directory of the MS-COCO dataset')
+                        metavar='/path/to/dataset/',
+                        help='The root directory of the dataset')
     parser.add_argument('--tag', required=False,
                         default='2017',
                         metavar='<tag>',
-                        help='Tag of the MS-COCO dataset (default=2017)')
+                        help='Tag of the label (default=2017)')
     parser.add_argument('-w', '--weights', required=False,
                         default=None,
                         metavar='/path/to/weights.h5',

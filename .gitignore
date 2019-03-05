@@ -1,6 +1,7 @@
 **/__pycache__/*
 **/*.h5
 **/*.pyc
+**/*.tar.gz
 datasets/*/
 playground.py
 examples/coco_converter

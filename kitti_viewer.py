@@ -16,6 +16,10 @@ if __name__ == '__main__':
                         default='train',
                         metavar="<subset>",
                         help='Either train or val')
+    parser.add_argument('--tag', required=False,
+                        default='2017',
+                        metavar='<tag>',
+                        help='Tag of the KITTI dataset (default=simple)')
     parser.add_argument('--check_sanity', required=False,
                         default=False,
                         type=bool,
@@ -32,7 +36,7 @@ if __name__ == '__main__':
     # Load dataset
     dataset = KittiDataset()
     print('Loading subset: {} ...'.format(args.subset))
-    dataset.load_kitti(args.dataset, args.subset)
+    dataset.load_kitti(args.dataset, args.subset, args.tag)
     if args.check_sanity:
         print('Checking sanity of the dataset...')
         dataset.check_sanity()

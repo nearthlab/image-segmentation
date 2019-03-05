@@ -90,11 +90,11 @@ class KittiDataset:
     def __init__(self):
         self.image_ids = []
 
-    def load_kitti(self, dataset_dir, subset):
+    def load_kitti(self, dataset_dir, subset, tag='simple'):
         'Initialization'
         assert subset in ['train', 'val'], 'subset must be either train or val but {} is given'.format(subset)
 
-        self.labels = load_labels(os.path.join(dataset_dir, 'label.json'))
+        self.labels = load_labels(os.path.join(dataset_dir, 'annotations', 'semantic_{}.json'.format(tag)))
         # color to trainId
         self.color2trainId = {label.color: label.trainId for label in self.labels}
         # trainId to name
