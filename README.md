@@ -3,7 +3,7 @@
 This repository includes:
   * A re-implementation of [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) with **multiple backbone support (with imagenet pretrained weights)** using the implementations of various backbone models in [qubvel/classification_models](https://github.com/qubvel/classification_models). (See [here](https://github.com/qubvel/classification_models#architectures) for available backbone architectures)
   * **Unified training, inference and evaluation** codes for Mask R-CNN and some semantic segmentation models (from [qubvel/segmentation_models](https://github.com/qubvel/segmentation_models)), for which you can **easily modify various parameters** with **simple configuration file interface**.
-  * COCO dataset and KITTI (or Cityscapes) dataset viewers
+  * COCO dataset and KITTI dataset viewers
 ```
   [Available segmentation models]
   Instance:
@@ -34,8 +34,12 @@ This repository includes:
 ```
 
 ![alt text](assets/unet.gif)
+<br/>UNet with SE-ResNext101 backbone, trained on a synthetic dataset using this repository
 ![alt text](assets/kitti.png)
+<br/>FPN with ResNet18 backbone, trained on only 180 images using this repository
 ![alt text](assets/coco.png)
+<br/>MaskRCNN with ResNet101 backbone, trained on COCO dataset, weights file ported from [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN).
+See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) for more details. 
 
 # Installation
 
@@ -78,7 +82,7 @@ This repository includes:
 # How to run examples
 Please read the instruction written in READ.md files in each example folder
 1. [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) <br/>
-This example illustrates how to build MaskRCNN with your custom backbone architecture. In particular, I adopted [matterport's implementation of ResNet](https://github.com/matterport/Mask_RCNN/blob/1ad9feaae3d87b52495413e6c8ea0e92f0e5bc34/mrcnn/model.py#L171), which is slightly different from [qubvel's](https://github.com/qubvel/classification_models/blob/e223c492477030b80bdc56b53471df39c4e090ea/classification_models/resnet/builder.py#L24). Moreover, you can run the inference using the pretrained [MaskRCNN_coco.h5](https://github.com/nearthlab/image-segmentation/releases). (I slightly modified the 'mask_rcnn_coco.h5' in [matterport/Mask_RCNN/releases](https://github.com/matterport/Mask_RCNN/releases) to make this example work: there are some differences in layer names only)
+This example illustrates how to build MaskRCNN with your custom backbone architecture. In particular, I adopted [matterport's implementation of ResNet](https://github.com/matterport/Mask_RCNN/blob/1ad9feaae3d87b52495413e6c8ea0e92f0e5bc34/mrcnn/model.py#L171), which is slightly different from [qubvel's](https://github.com/qubvel/classification_models/blob/e223c492477030b80bdc56b53471df39c4e090ea/classification_models/resnet/builder.py#L24). Moreover, you can run the inference using the pretrained [MaskRCNN_coco.h5](https://github.com/nearthlab/image-segmentation/releases). (I slightly modified the 'mask_rcnn_coco.h5' in [matterport/Mask_RCNN/releases](https://github.com/matterport/Mask_RCNN/releases) to make this example work: the only differences are layer names)
 
 2. [Imagenet Classification](https://github.com/nearthlab/image-segmentation/tree/master/examples/imagenet) <br/>
 This example shows the imagenet classification results for various backbone architectures.
@@ -96,7 +100,12 @@ Some example cfg files that describes the segmentation models and training proce
   * KITTI dataset is a public dataset available [online](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015).
   I simply splitted the dataset into training and validation sets and simplified the labels using [create_kitti_label.py](https://github.com/nearthlab/image-segmentation/blob/master/examples/create_kitti_label/create_kitti_label.py).
   
-  * Note that this dataset is very small containing only 180 training images and 20 validation images. If you want to train a model for a serious purpose, you should consider using much more larger dataset. 
+  * Note that this dataset is very small containing only 180 training images and 20 validation images. If you want to train a model for a serious purpose, you should consider using much more larger dataset.
+  
+  * To view the KITTI dataset, run:
+  ```bash
+    python kitti_viewer.py -d=datasets/KITTI
+  ``` 
 
   ii. Choose your model and copy corresponding cfg files from examples/configs. For example, if you want to train a Unet model,
 ```bash
@@ -111,7 +120,6 @@ Some example cfg files that describes the segmentation models and training proce
 
   iv. Run train.py:
 ```bash
-  cd cd /path/to/image-segmentation
   python train.py -s plans/unet -d datasets/KITTI \
   -m plans/unet/unet.cfg \
   -t plans/unet/train_unet_decoder.cfg plans/unet/train_unet_all.cfg
@@ -135,6 +143,10 @@ Some example cfg files that describes the segmentation models and training proce
   cd /path/to/image-segmentation/datasets
   ./download_coco.sh
 ```
+  * To view the COCO dataset, run:
+  ```bash
+    python coco_viewer.py -d=datasets/coco
+  ``` 
   
   ii. Copy the example cfg files from examples/configs/maskrcnn.
 ```bash
@@ -150,7 +162,6 @@ Some example cfg files that describes the segmentation models and training proce
 
   iv. Run train.py:
 ```bash
-  cd cd /path/to/image-segmentation
   python train.py -s plans/maskrcnn -d datasets/coco \
   -m plans/maskrcnn/maskrcnn.cfg \
   -t plans/maskrcnn/train_maskrcnn_heads.cfg plans/maskrcnn/train_maskrcnn_stage3up.cfg plans/maskrcnn/train_maskrcnn_all.cfg
