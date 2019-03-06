@@ -34,9 +34,8 @@ This repository includes:
 ```
 
 ![alt text](assets/unet.gif)
-![alt text](assets/kitti0.png)
-![alt text](assets/kitti1.png)
-![alt text](assets/coco0.png)
+![alt text](assets/kitti.png)
+![alt text](assets/coco.png)
 
 # Installation
 
@@ -79,13 +78,13 @@ This repository includes:
 # How to run examples
 Please read the instruction written in READ.md files in each example folder
 1. [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) <br/>
-This example illustrates how to build MaskRCNN with your custom backbone CNN. In particular, I adopted [matterport's implementation of ResNet](https://github.com/matterport/Mask_RCNN/blob/1ad9feaae3d87b52495413e6c8ea0e92f0e5bc34/mrcnn/model.py#L171), which is slightly different from [qubvel's](https://github.com/qubvel/classification_models/blob/e223c492477030b80bdc56b53471df39c4e090ea/classification_models/resnet/builder.py#L24). Moreover, you can run the inference using the pretrained [MaskRCNN_coco.h5](https://github.com/nearthlab/image-segmentation/releases). (I slightly modified the 'mask_rcnn_coco.h5' in [matterport/Mask_RCNN/releases](https://github.com/matterport/Mask_RCNN/releases) to make this file due to some differences in layer names)
+This example illustrates how to build MaskRCNN with your custom backbone architecture. In particular, I adopted [matterport's implementation of ResNet](https://github.com/matterport/Mask_RCNN/blob/1ad9feaae3d87b52495413e6c8ea0e92f0e5bc34/mrcnn/model.py#L171), which is slightly different from [qubvel's](https://github.com/qubvel/classification_models/blob/e223c492477030b80bdc56b53471df39c4e090ea/classification_models/resnet/builder.py#L24). Moreover, you can run the inference using the pretrained [MaskRCNN_coco.h5](https://github.com/nearthlab/image-segmentation/releases). (I slightly modified the 'mask_rcnn_coco.h5' in [matterport/Mask_RCNN/releases](https://github.com/matterport/Mask_RCNN/releases) to make this example work: there are some differences in layer names only)
 
 2. [Imagenet Classification](https://github.com/nearthlab/image-segmentation/tree/master/examples/imagenet) <br/>
 This example shows the imagenet classification results for various backbone architectures.
 
 3. [Create KITTI Label](https://github.com/nearthlab/image-segmentation/tree/master/examples/create_kitti_label) <br/>
-This example is a code that I used to simplify some of the object class labels in KITTI dataset. (For instance, I merged the 5 separate classes 'car', 'truck', 'bus', 'caravan' and 'trailer' into one single class called 'vehicle')
+This example is a code that I used to simplify some of the object class labels in KITTI dataset. (For instance, I merged the 5 separate classes 'car', 'truck', 'bus', 'caravan' and 'trailer' into a single class called 'vehicle')
 
 4. [Configurations](https://github.com/nearthlab/image-segmentation/tree/master/examples/configs) <br/>
 Some example cfg files that describes the segmentation models and training processes
@@ -93,10 +92,11 @@ Some example cfg files that describes the segmentation models and training proce
 # How to train your own FPN / LinkNet / PSPNet / UNet model on KITTI dataset 
 
   i. Download the modified KITTI dataset from [release page](https://github.com/nearthlab/image-segmentation/releases)
-  (or make your own dataset into the same format) and place it under [datasets](https://github.com/nearthlab/image-segmentation/tree/master/datasets) folder. [Note that the KITTI dataset is a public dataset available [online](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015).
-  I simply splitted the dataset into training and validation sets and simplified the labels using [create_kitti_label.py](https://github.com/nearthlab/image-segmentation/blob/master/examples/create_kitti_label/create_kitti_label.py).]
+  (or make your own dataset into the same format) and place it under [datasets](https://github.com/nearthlab/image-segmentation/tree/master/datasets) folder. 
+  * KITTI dataset is a public dataset available [online](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015).
+  I simply splitted the dataset into training and validation sets and simplified the labels using [create_kitti_label.py](https://github.com/nearthlab/image-segmentation/blob/master/examples/create_kitti_label/create_kitti_label.py).
   
-  * Note that KITTI dataset is a very small dataset containing only 180 training images and 20 validation images. If you want to train a model for a serious purpose, you should consider using much more larger dataset. 
+  * Note that this dataset is very small containing only 180 training images and 20 validation images. If you want to train a model for a serious purpose, you should consider using much more larger dataset. 
 
   ii. Choose your model and copy corresponding cfg files from examples/configs. For example, if you want to train a Unet model,
 ```bash
@@ -105,11 +105,11 @@ Some example cfg files that describes the segmentation models and training proce
   cp examples/configs/unet/*.cfg plans/unet
 ```
 
-  iii. [Optional] Tune some model and training parameters in the config files that you have just copied. Read the comments in the example config files for what each parameter does.
+  iii. [Optional] Tune some model and training parameters in the config files that you have just copied. Read the comments in the example config files for what each parameter means.
 [Note that you have to declare a variable in .cfg file in the format
 ```{type}-{VARIABLE_NAME} = {value}```]
 
-  iv. Run the training command
+  iv. Run train.py:
 ```bash
   cd cd /path/to/image-segmentation
   python train.py -s plans/unet -d datasets/KITTI \
@@ -122,6 +122,11 @@ Some example cfg files that describes the segmentation models and training proce
   <br/><br/>
   Once the training is done, you can find the three files: 'class_names.json', 'infer.cfg' and 'best_model.h5',
   which you can use later for the [inference](https://github.com/nearthlab/image-segmentation/blob/master/README.md#how-to-visualize-inference)
+  
+  v. KITTI Evaluation:
+```bash
+  python evaluate_kitti.py -c /path/to/infer.cfg -w /path/to/best_model.h5 -l /path/to/class_names.json
+```
 
 # How to train your own MaskRCNN model on COCO dataset
 
@@ -138,12 +143,12 @@ Some example cfg files that describes the segmentation models and training proce
   cp examples/configs/maskrcnn/*.cfg plans/maskrcnn
 ```
 
-  iii. [Optional] Tune some model and training parameters in the config files that you have just copied. Read the comments in the example config files for what each parameter does.
+  iii. [Optional] Tune some model and training parameters in the config files that you have just copied. Read the comments in the example config files for what each parameter means.
 [Note that you have to declare a variable in .cfg file in the format
 ```{type}-{VARIABLE_NAME} = {value}```]
 
 
-  iv. Run the training command
+  iv. Run train.py:
 ```bash
   cd cd /path/to/image-segmentation
   python train.py -s plans/maskrcnn -d datasets/coco \
@@ -155,7 +160,11 @@ Some example cfg files that describes the segmentation models and training proce
   Likewise, you can find the three files: 'class_names.json', 'infer.cfg' and 'best_model.h5',
   which you can use later for the [inference](https://github.com/nearthlab/image-segmentation/blob/master/README.md#how-to-visualize-inference)
   
-  
+  v. COCO Evaluation:
+```bash
+  python evaluate_coco.py -c /path/to/infer.cfg -w /path/to/best_model.h5 -l /path/to/class_names.json
+```
+
 # How to visualize inference
 
 You can visualize your model's inference in a pop-up window:
@@ -163,7 +172,7 @@ You can visualize your model's inference in a pop-up window:
 python infer_gui.py -c=/path/to/infer.cfg -w=/path/to/best_model.h5 -l=/path/to/class_names.json \
 -i=/path/to/a/directory/containing/image_files
 ```
-or save the result as image files [This will create a directory named 'results' under the directory you provided in -i option, and write the viusalized inference images in it]:
+or save the results as image files [This will create a directory named 'results' under the directory you provided in -i option, and write the viusalized inference images in it]:
 ```bash
 python infer.py -c=/path/to/infer.cfg -w=/path/to/best_model.h5 -l=/path/to/class_names.json \
 -i=/path/to/a/directory/containing/image_files

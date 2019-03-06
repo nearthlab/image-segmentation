@@ -7,11 +7,13 @@ from models import get_model_wrapper
 from data_generators.kitti import load_image_gt, KittiDataset
 
 def compute_confusion_matrix(gt_mask, pr_mask, num_classes):
+    gt_mask = np.max(gt_mask * np.arange(1, num_classes), axis=-1)
+    pr_mask = np.max(pr_mask * np.arange(1, num_classes), axis=-1)
 
     confusion_matrix = np.zeros((num_classes, num_classes))
-    for row, col, cls in np.ndindex(gt_mask.shape):
-        gt_cls = (cls + 1) * gt_mask[row][col][cls]
-        pr_cls = (cls + 1) * pr_mask[row][col][cls]
+    for row, col in np.ndindex(gt_mask.shape):
+        gt_cls = gt_mask[row][col]
+        pr_cls = pr_mask[row][col]
         confusion_matrix[gt_cls][pr_cls] += 1
 
     return confusion_matrix

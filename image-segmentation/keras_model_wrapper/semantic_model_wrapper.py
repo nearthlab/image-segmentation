@@ -115,11 +115,11 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
         res = self.model.predict(input, batch_size=1)[0]
 
         num_channels = res.shape[-1]
-        final_result = np.zeros((height, width, num_channels))
+        final_result = np.zeros((height, width, num_channels), dtype=np.bool)
         for i in range(num_channels):
             resized_mask = unresize_image(res[:, :, i], window, (height, width))
-            resized_mask[resized_mask > threshold] = 1.0
-            resized_mask[resized_mask <= threshold] = 0.0
+            if threshold:
+                resized_mask = np.where(resized_mask >= threshold, 1, 0).astype(bool)
             final_result[:, :, i] = resized_mask
 
         return final_result

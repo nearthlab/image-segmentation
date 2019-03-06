@@ -10,8 +10,14 @@ To run example inference code on image files in images folder, download MaskRCNN
   # or python infer.py to save the results in images/results folder, which will be autamatically created
 ```
 
-To train your model with this example custom backbone, run:
+To train your model with this example custom backbone, run train.py:
 ```bash
   cd /path/to/image-segmentation/examples/custom_backbone
   python train.py -d /path/to/coco
+```
+
+To evaluate the model, run evaluate.py:
+```bash
+  cd /path/to/image-segmentation/examples/custom_backbone
+  python evaluate.py -d /path/to/coco
 ```
