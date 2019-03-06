@@ -50,7 +50,7 @@ See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/maste
   git clone https://github.com/nearthlab/image-segmentation
   cd image-segmentation
   source activate 
-  pip install -r requirements.txt
+  cat requirements.txt | while read p; do pip install $p; done
 ```
   
   You should run the following commands every time you open a new terminal in order to run any of python files
