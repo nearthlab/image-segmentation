@@ -67,8 +67,10 @@ See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/maste
 ```bash
   git clone https://github.com/nearthlab/image-segmentation
   cd image-segmentation
-  pip install --user -r requirements.txt
+  cat requirements.txt | while read p; do pip install --user $p; done
 ```
+
+* You may need to reinstall tensorflow(-gpu) if the automatically installed one is not suitable for your local environment.
 
 **Requirements**<br/>
 
@@ -76,7 +78,7 @@ See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/maste
     2. segmentation-models==0.2.0
     3. keras>=2.2.0
     4. keras-applications>=1.0.7 
-    5. tensorflow(-gpu)==1.10.0 (tested)
+    5. tensorflow(-gpu)=>1.8.0 (tested on 1.10.0)
 
 
 # How to run examples
