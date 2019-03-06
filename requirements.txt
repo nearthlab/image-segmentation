@@ -2,4 +2,3 @@ segmentation-models==0.2.0
 tensorflow-gpu>=1.8.0
 tqdm
 pycocotools
-shapely
