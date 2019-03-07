@@ -76,7 +76,6 @@ def load_image_gt(dataset, config, image_id, use_mini_mask=False):
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
     bbox = extract_bboxes(mask)
-    bbox = norm_boxes(bbox, mask.shape)
 
     # Active classes
     # Different datasets have different classes, so track the
@@ -434,7 +433,8 @@ def data_generator(dataset, config, shuffle=True, batch_size=1):
                     continue
 
                 # RPN Targets
-                rpn_match, rpn_bbox = build_rpn_targets(anchors, gt_class_ids, gt_boxes, config)
+                norm_gt_boxes = norm_boxes(gt_boxes, config.IMAGE_SHAPE)
+                rpn_match, rpn_bbox = build_rpn_targets(anchors, gt_class_ids, norm_gt_boxes, config)
 
                 # Init batch arrays
                 if b == 0:

@@ -444,7 +444,7 @@ def extract_bboxes(mask):
 
     Returns: bbox array [num_instances, (y1, x1, y2, x2)].
     '''
-    boxes = np.zeros([mask.shape[-1], 4], dtype=np.float32)
+    boxes = np.zeros([mask.shape[-1], 4], dtype=np.int32)
     for i in range(mask.shape[-1]):
         m = mask[:, :, i]
         # Bounding box.
@@ -461,4 +461,4 @@ def extract_bboxes(mask):
             # resizing or cropping. Set bbox to zeros
             x1, x2, y1, y2 = 0, 0, 0, 0
         boxes[i] = np.array([y1, x1, y2, x2])
-    return boxes.astype(np.float32)
+    return boxes.astype(np.int32)
