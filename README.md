@@ -190,4 +190,14 @@ or save the results as image files [This will create a directory named 'results'
 python infer.py -c=/path/to/infer.cfg -w=/path/to/best_model.h5 -l=/path/to/class_names.json \
 -i=/path/to/a/directory/containing/image_files
 ```
-
+# References
+```
+@misc{matterport_maskrcnn_2017,
+  title={Mask R-CNN for object detection and instance segmentation on Keras and TensorFlow},
+  author={Waleed Abdulla},
+  year={2017},
+  publisher={Github},
+  journal={GitHub repository},
+  howpublished={\url{https://github.com/matterport/Mask_RCNN}},
+}
+```
