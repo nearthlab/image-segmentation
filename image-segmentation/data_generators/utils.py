@@ -26,7 +26,6 @@
 # THE SOFTWARE.
 
 import warnings
-import threading
 import numpy as np
 import scipy
 import skimage
