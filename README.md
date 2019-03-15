@@ -1,6 +1,6 @@
 # image-segmentation
 
-[<img width="700" src="http://nearthlab.com/wp-content/uploads/2018/01/m-logo-1.jpg">](http://nearthlab.com/en/)
+[<img width="900" src="http://nearthlab.com/wp-content/uploads/2018/01/m-logo-1.jpg">](http://nearthlab.com/en/)
 
 This repository includes:
   * A re-implementation of [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) with **multiple backbone support (with imagenet pretrained weights)** using the implementations of various backbone models in [qubvel/classification_models](https://github.com/qubvel/classification_models). (See [here](https://github.com/qubvel/classification_models#architectures) for available backbone architectures)
