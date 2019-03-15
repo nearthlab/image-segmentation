@@ -1,5 +1,7 @@
 # image-segmentation
 
+[<img width="700" src="http://nearthlab.com/wp-content/uploads/2018/01/m-logo-1.jpg">](http://nearthlab.com/en/)
+
 This repository includes:
   * A re-implementation of [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) with **multiple backbone support (with imagenet pretrained weights)** using the implementations of various backbone models in [qubvel/classification_models](https://github.com/qubvel/classification_models). (See [here](https://github.com/qubvel/classification_models#architectures) for available backbone architectures)
   * **Unified training, inference and evaluation** codes for Mask R-CNN and some semantic segmentation models (from [qubvel/segmentation_models](https://github.com/qubvel/segmentation_models)), for which you can **easily modify various parameters** with **simple configuration file interface**.
@@ -33,11 +35,11 @@ This repository includes:
   
 ```
 
-![alt text](assets/unet.gif)
+![unet](assets/unet.gif)
 <br/>UNet with SE-ResNext101 backbone, trained on a synthetic dataset using this repository
-![alt text](assets/kitti.png)
+![fpn](assets/kitti.png)
 <br/>FPN with ResNet18 backbone, trained on only 180 images using this repository
-![alt text](assets/coco.png)
+![maskrcnn](assets/coco.png)
 <br/>MaskRCNN with ResNet101 backbone, trained on COCO dataset, weights file ported from [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN).
 See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) for more details. 
 
