@@ -23,10 +23,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dataset_name = os.path.basename(args.dataset)
-    win_titles = {'train': '{}: Training'.format(dataset_name), 'val': '{}: Validation'.format(dataset_name)}
-
-    assert args.subset in win_titles, \
-        'The argument for --subset option must be either \'train\' or \'val\' but {} is given.'.format(args.subset)
 
     # Load dataset
     dataset = CocoDataset()
@@ -40,5 +36,5 @@ if __name__ == '__main__':
         print("{:3}. {:50}".format(i, info['name']))
 
     viewer = GuiCocoViewer(
-        win_titles[args.subset], dataset)
+        args.subset + args.tag, dataset)
     plt.show()

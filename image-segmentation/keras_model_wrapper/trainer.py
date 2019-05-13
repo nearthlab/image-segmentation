@@ -256,8 +256,7 @@ class Trainer:
 
             # Print layer status
             if verbose:
-                msg = '{}{:20}   ({:18}):     {}'.format(' ' * indent,
-                                                      layer.name if layer.__class__.__name__ != 'TimeDistributed' else layer.layer.name,
+                msg = '{}{:20}   ({:18}):     {}'.format(' ' * indent, layer.name,
                                                       layer.__class__.__name__ if layer.__class__.__name__ != 'TimeDistributed'
                                                          else layer.layer.__class__.__name__,
                                                       'Trainable' if trainable else 'Frozen')

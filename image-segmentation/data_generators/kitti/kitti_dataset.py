@@ -95,8 +95,11 @@ class KittiDataset:
         assert subset in ['train', 'val'], 'subset must be either train or val but {} is given'.format(subset)
 
         self.labels = load_labels(os.path.join(dataset_dir, 'annotations', 'semantic_{}.json'.format(tag)))
-        # color to trainId
-        self.color2trainId = {label.color: label.trainId for label in self.labels}
+
+        # trainId to colors
+        self.trainId2colors = {label.trainId: [] for label in self.labels}
+        for label in self.labels:
+            self.trainId2colors[label.trainId].append(label.color)
         # trainId to name
         self.trainId2name = {label.trainId: label.name for label in self.labels}
 
@@ -134,8 +137,10 @@ class KittiDataset:
     def load_mask(self, image_id):
         rgb_mask = load_image_rgb(os.path.join(self.label_dir, self.label_files[image_id]))
         mask = np.zeros((rgb_mask.shape[0], rgb_mask.shape[1], self.num_classes - 1))
-        for row, col in np.ndindex(rgb_mask.shape[:2]):
-            trainId = self.color2trainId[tuple(rgb_mask[row][col])]
-            if trainId >= 0 and trainId != 255:
-                mask[row][col][trainId] = 1.0
+        for cls in range(self.num_classes - 1):
+            colors = self.trainId2colors[cls]
+            cls_mask = np.zeros((rgb_mask.shape[0], rgb_mask.shape[1]))
+            for color in colors:
+                cls_mask = np.logical_or(cls_mask, (rgb_mask == color).all(axis=2))
+            mask[:,:,cls] = cls_mask
         return mask
