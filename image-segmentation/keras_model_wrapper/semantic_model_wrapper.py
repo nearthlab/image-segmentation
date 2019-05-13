@@ -5,7 +5,7 @@ import tensorflow as tf
 import keras.backend as K
 from keras.models import Model
 from keras.layers import Lambda, Input
-from keras.losses import categorical_crossentropy
+from keras.losses import categorical_crossentropy, binary_crossentropy
 
 from keras_model_wrapper import KerasModelWrapper
 
@@ -19,6 +19,9 @@ from segmentation_models.losses import dice_loss as dice_loss_graph
 
 def cce_loss_graph(gt, pr):
     return K.mean(categorical_crossentropy(gt, pr))
+
+def bce_loss_graph(gt, pr):
+    return K.mean(binary_crossentropy(gt, pr))
 
 ############################################################
 #  Semantic Segmentation Model Class
@@ -82,6 +85,9 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
             cce_loss = Lambda(lambda x: cce_loss_graph(*x), name='cce_loss') \
                 ([input_gt_masks, output_mask])
 
+            bce_loss = Lambda(lambda x: bce_loss_graph(*x), name='bce_loss') \
+                ([input_gt_masks, output_mask])
+
             jaccard_loss = Lambda(lambda x: jaccard_loss_graph(*x), name='jaccard_loss') \
                 ([input_gt_masks, output_mask])
 
@@ -91,7 +97,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
             inputs = base_model.inputs
             inputs += [input_gt_masks]
             outputs = base_model.outputs
-            outputs += [cce_loss, jaccard_loss, dice_loss]
+            outputs += [cce_loss, bce_loss, jaccard_loss, dice_loss]
             model = Model(inputs, outputs, name=name)
 
             return model
