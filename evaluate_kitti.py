@@ -22,7 +22,7 @@ def compute_confusion_matrix(gt_mask, pr_mask, num_classes):
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description='Run Mask R-CNN detector.')
+        description='Evaluate a semantic segmentation model on KITTI dataset.')
 
     parser.add_argument('-c', '--model_cfg', required=True,
                         metavar='/path/to/model.cfg',

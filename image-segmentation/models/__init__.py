@@ -1,3 +1,4 @@
+from .image_classifier import ImageClassifier
 from .maskrcnn import MaskRCNN
 from .unet import Unet
 from .fpn import FPN
@@ -5,6 +6,7 @@ from .linknet import Linknet
 from .pspnet import PSPNet
 
 MODEL_WRAPPERS = {
+    'classifier': ImageClassifier,
     'maskrcnn': MaskRCNN,
     'unet': Unet,
     'fpn': FPN,

@@ -25,7 +25,6 @@ class KerasModelWrapper(metaclass=ABCMeta):
     @abstractmethod
     def predict(self, image, threshold=0.5):
         assert self.config.MODE == 'inference'
-        assert self.config.BATCH_SIZE == 1
 
     def load_weights(self, model_path, by_name=True, exclude=None):
         '''Modified version of the corresponding Keras function with

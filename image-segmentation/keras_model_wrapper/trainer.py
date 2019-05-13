@@ -145,6 +145,11 @@ class Trainer:
             print('Loading COCO Dataset: {} (subset: {} / version tag: {})'.format(dataset_dir, subset, tag))
             dataset.load_coco(dataset_dir, subset, tag)
             dataset.prepare()
+        elif self.model_config.MODEL == 'classifier':
+            from data_generators.classifier import data_generator, ClassificationDataset
+
+            dataset = ClassificationDataset()
+            dataset.load(dataset_dir, subset)
         else:
             from data_generators.kitti import data_generator, KittiDataset
 
@@ -159,9 +164,8 @@ class Trainer:
         assert dataset.num_classes == self.model_config.NUM_CLASSES, 'NUM_CLASSES in model and dataset mismatched.'
 
         if self.stage == 0:
-            fp = open(os.path.join(self.log_dir, '..', 'class_names.json'), 'w')
-            json.dump(dataset.class_names, fp)
-            fp.close()
+            with open(os.path.join(self.log_dir, '..', 'class_names.json'), 'w') as fp:
+                json.dump(dataset.class_names, fp)
 
         return data_generator(dataset, self.model_config, shuffle=True, batch_size=self.model_config.BATCH_SIZE)
 
