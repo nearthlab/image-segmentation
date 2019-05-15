@@ -5,11 +5,8 @@ import tensorflow as tf
 import keras.backend as K
 from keras.models import Model
 from keras.layers import Lambda, Input
-<<<<<<< HEAD
 from keras.losses import categorical_crossentropy, binary_crossentropy
-=======
 from keras.losses import binary_crossentropy, categorical_crossentropy
->>>>>>> 034a8a1ae120ed251ad03f6eccb813906c5de9ff
 
 from keras_model_wrapper import KerasModelWrapper
 
@@ -107,11 +104,7 @@ class SemanticModelWrapper(KerasModelWrapper, metaclass=ABCMeta):
             inputs = base_model.inputs
             inputs += [input_gt_masks]
             outputs = base_model.outputs
-<<<<<<< HEAD
-            outputs += [cce_loss, bce_loss, jaccard_loss, dice_loss]
-=======
             outputs += [bce_loss, cce_loss, jaccard_loss, dice_loss]
->>>>>>> 034a8a1ae120ed251ad03f6eccb813906c5de9ff
             model = Model(inputs, outputs, name=name)
 
             return model
