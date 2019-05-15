@@ -5,7 +5,6 @@ import tensorflow as tf
 import keras.backend as K
 from keras.models import Model
 from keras.layers import Lambda, Input
-from keras.losses import categorical_crossentropy, binary_crossentropy
 from keras.losses import binary_crossentropy, categorical_crossentropy
 
 from keras_model_wrapper import KerasModelWrapper
