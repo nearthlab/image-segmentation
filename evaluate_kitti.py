@@ -38,6 +38,10 @@ if __name__ == '__main__':
                         default='simple',
                         metavar='<tag>',
                         help='Tag of the KITTI dataset (default=simple)')
+    parser.add_argument('--subset', required=False,
+                        default='val',
+                        metavar="<subset>",
+                        help='Either train or val')
     parser.add_argument('-t', '--threshold', required=False,
                         type=float,
                         default=0.5,
@@ -49,7 +53,7 @@ if __name__ == '__main__':
     model.load_weights(args.weights)
 
     dataset = KittiDataset()
-    dataset.load_kitti(args.dataset, 'val', args.tag)
+    dataset.load_kitti(args.dataset, args.subset, args.tag)
 
     assert dataset.num_classes == model.config.NUM_CLASSES
 
@@ -79,10 +83,9 @@ if __name__ == '__main__':
     # Therefore, the background region absorbs all
     # false alarms without affecting the object class accuracies
     # limitation: a strong drawback for datasets with a large background class
-    per_class = 0
+    per_class = []
     for i in range(num_classes):
-        per_class += confusion_matrix[i][i] / G[i]
-    per_class /= num_classes
+        per_class.append(confusion_matrix[i][i] / G[i])
 
     # JI(jaccard index)
     # Measures the intersection over the union of the labelled segments
@@ -90,19 +93,30 @@ if __name__ == '__main__':
     # both the false alarms and the missed values for each class
     # limitation: it evaluates the amount of pixels correctly labelled, but not necessarily how
     # accurate the segmentation boundaries are
-    jaccard_index = 0
+    jaccard_index = []
     for i in range(num_classes):
-        jaccard_index += confusion_matrix[i][i] / (G[i] + P[i] - confusion_matrix[i][i])
-    jaccard_index /= num_classes
+        jaccard_index.append(confusion_matrix[i][i] / (G[i] + P[i] - confusion_matrix[i][i]))
 
-    print('Confusion Matrix:\n', confusion_matrix)
-    print('OP:', overall_pixel)
-    print('PC:', per_class)
-    print('JI:', jaccard_index)
+    # Normalized confusion matrix
+    ncm = confusion_matrix / np.stack((G,) * num_classes, axis=1)
 
-    # [[1.20929419e+09 1.69532300e+06]
-    #  [2.11948500e+07 4.20633561e+08]]
-    # 0.9649066449834736
+    class_names = ['Background']
+    class_names += dataset.class_names
 
+    print('<Class Indexing>')
+    for class_id, class_name in enumerate(class_names):
+        print('\t{}: {}'.format(class_id + 1, class_name))
 
+    np.set_printoptions(precision=2, suppress=True)
+    print('\n<Confusion Matrix>\n', ncm*100)
+    np.set_printoptions()
 
+    print('\n<Pixel Accuracy>')
+    print('Overall: %.2f%%' % (overall_pixel.item() * 100))
+    for class_name, op in zip(class_names, per_class):
+        print('\t{}: %.2f%%'.format(class_name) % (op.item() * 100))
+
+    print('\n<Jaccard Index>')
+    print('Overall: %.2f%%' % (np.sum(jaccard_index).item() / num_classes * 100))
+    for class_name, ji in zip(class_names, jaccard_index):
+        print('\t{}: %.2f%%'.format(class_name) % (ji.item() * 100))

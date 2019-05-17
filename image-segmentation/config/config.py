@@ -34,9 +34,9 @@ class Config:
                     typename = d[key].__class__.__name__
                     if typename == 'NoneType':
                         typename = 'str'
-                    s += depth * '\t' + '{}-{} = {}\n'.format(typename, key, str(d[key]).replace('\"', '\''))
+                    s += depth * '\t' + '{}-{} = {}\n'.format(typename, key, str(d[key]).replace('\'', '\"'))
                 else:
-                    s += depth * '\t' + '{} = {}\n'.format(key, str(d[key]).replace('\"', '\''))
+                    s += depth * '\t' + '{} = {}\n'.format(key, str(d[key]).replace('\'', '\"'))
         return s
 
     class ConstError(TypeError): pass

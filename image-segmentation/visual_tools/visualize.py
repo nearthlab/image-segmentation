@@ -36,8 +36,7 @@ from matplotlib.patches import Polygon
 
 from mask_rcnn.utils import extract_bboxes
 
-
-def random_colors(N, bright=True):
+def random_colors(N, bright=True, seed=1, uint8=False):
     """
     Generate random colors.
     To get visually distinct colors, generate them in HSV space then
@@ -47,8 +46,11 @@ def random_colors(N, bright=True):
     hsv = [(i / N, 1, brightness) for i in range(N)]
     colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
     # Use random.Random(*) to produce the same sequence of random colors every time
-    random.Random(4).shuffle(colors)
-    return colors
+    random.Random(seed).shuffle(colors)
+    if uint8:
+        return np.clip(np.array(colors) * 255, 0, 255).astype(np.uint8)
+    else:
+        return colors
 
 
 def apply_mask(image, mask, color, alpha=0.5):
@@ -195,7 +197,7 @@ def draw_segmentation(image, masks, class_names=None,
     """
     masked_image = image.astype(np.uint32).copy()
 
-    # Number of instances
+    # Number of classes
     N = masks.shape[-1]
     if not N:
         print("\n*** No instances to display *** \n")
@@ -250,6 +252,48 @@ def draw_segmentation(image, masks, class_names=None,
     result = figure_to_ndarray(fig)
     plt.close()
     return result
+
+
+def draw_segmentation_simple(image, masks):
+    """
+    masks: [height, width, num_classes] (num_classes excluding background)
+    """
+    masked_image = image.astype(np.uint32).copy()
+
+    # Number of classes
+    N = masks.shape[-1]
+    if not N:
+        print("\n*** No instances to display *** \n")
+
+    # Generate random colors
+    colors = random_colors(N, bright=False, seed=6)
+
+    for i in range(N):
+        mask = masks[:, :, i]
+        masked_image = apply_mask(masked_image, mask, colors[i])
+
+    return masked_image
+
+
+def rgb_semantic_mask(masks):
+    """
+    masks: [height, width, num_classes] (num_classes excluding background)
+    """
+    rgb_mask = np.zeros((*masks.shape[:2], 3), np.uint8)
+
+    # Number of classes
+    N = masks.shape[-1]
+    if not N:
+        print("\n*** No instances to display *** \n")
+
+    # Generate random colors
+    colors = random_colors(N, bright=False, seed=6)
+
+    for i in range(N):
+        mask = masks[:, :, i]
+        rgb_mask = apply_mask(rgb_mask, mask, colors[i], alpha=1.0)
+
+    return rgb_mask
 
 
 def display_instances(image, boxes, masks, class_ids, class_names=None,

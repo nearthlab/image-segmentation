@@ -57,7 +57,7 @@ if __name__ == '__main__':
                                if x.lower().endswith('.jpg') or x.lower().endswith('.png') or x.lower().endswith('.bmp')
                                ])
 
-    dst_dir = os.path.join(args.image_dir, 'results')
+    dst_dir = os.path.join(args.image_dir, os.path.basename(args.weights)[:-3])
     if not os.path.exists(dst_dir):
         os.mkdir(dst_dir)
 
