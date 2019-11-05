@@ -35,13 +35,17 @@ This repository includes:
   
 ```
 
+
+<br/>UNet with SeResNext101 backbone, trained on a synthetic dataset using this repository
 ![unet](assets/unet.gif)
-<br/>UNet with SE-ResNext101 backbone, trained on a synthetic dataset using this repository
-![fpn](assets/kitti.png)
+<br/>UNet with SeResNext50 backbone, trained on only 500 images + augmentation using this repository
+<br/>(left: input image, middle: ground truth, right: prediction)
+![defects](assets/defects.png)
 <br/>FPN with ResNet18 backbone, trained on only 180 images using this repository
-![maskrcnn](assets/coco.png)
+![fpn](assets/kitti.png)
 <br/>MaskRCNN with ResNet101 backbone, trained on COCO dataset, weights file ported from [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN).
-See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) for more details. 
+See [Custom Backbone](https://github.com/nearthlab/image-segmentation/tree/master/examples/custom_backbone) for more details.
+![maskrcnn](assets/coco.png) 
 
 # Installation
 

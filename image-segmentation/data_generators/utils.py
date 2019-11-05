@@ -29,6 +29,7 @@ import warnings
 import numpy as np
 import scipy
 import skimage
+import cv2
 from skimage.io import imread
 from skimage.color import gray2rgb
 from skimage.transform import resize as skresize
@@ -37,15 +38,7 @@ from distutils.version import LooseVersion
 from classification_models import Classifiers
 
 def load_image_rgb(fname):
-    image = imread(fname)
-    # If grayscale. Convert to RGB for consistency.
-    if image.ndim != 3:
-        image = gray2rgb(image)
-    # If has an alpha channel, remove it for consistency
-    if image.shape[-1] == 4:
-        image = image[..., :3]
-    return image
-
+    return cv2.cvtColor(cv2.imread(fname), cv2.COLOR_BGR2RGB)
 
 def resize(image, output_shape, order=1, mode='constant', cval=0, clip=True,
            preserve_range=False, anti_aliasing=False, anti_aliasing_sigma=None):
